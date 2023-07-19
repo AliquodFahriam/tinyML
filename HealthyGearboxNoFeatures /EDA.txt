@@ -1,0 +1,3 @@
+https://www.kaggle.com/code/norrisrahman/gearbox-and-vibration-analysis-ml
+https://data.mendeley.com/datasets/2znkfwhzs7
+https://www.sciencedirect.com/science/article/pii/S0888327020308967
