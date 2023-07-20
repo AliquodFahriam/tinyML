@@ -47,13 +47,19 @@ Intrinsic Time-Scale Decomposition (ITD) is an adaptive and data-driven method l
 
 # The Bayesian Optimization Algorithm (BOA)
 
+Permette di ottimizzare funzioni *black-box* che sarebbero difficili da valutare. Ovvero che richiederebbero enormi risorse di calcolo e i cui meccanismi interni non possono essere compresi con precisione. 
+
+Un esempio di ciò è l'ottimizzazione degli **iperparametri** per una rete neurale per cui ogni iterazione potrebbe richiedere alcuni giorni. Un metodo efficiente richiede di trovare il miglior insieme di iperparametri utilizzando il numero minimo di iterazioni. Questo metodo si chiama **Bayesian Optimization**. 
+
+
+
 Bayesian optimization is a **machine learning** based optimization algorithm <mark>used to find the parameters that globally optimizes a given black box function</mark>. There are 2 important components within this algorithm:
 
-* The black box function to optimize: f(x).<br>
+* The black box function to optimize: $f(x)$.<br>
 We want to find the value of $x$ which globally optimizes $f(x)$. The $f(x)$ is also sometimes called the objective function, the target function, or the loss function depending on the problem. In general, we only have knowledge about the inputs and outputs of $f(x)$.
 
 * The acquisition function: <br>
-$a(x)$, which is used to generate new values of $x$ for evaluation with $f(x)$. $a(x)$ internally relies on a Gaussian process model $m(X, y)$ to generate new values of $x%.
+$a(x)$, which is used to generate new values of $x$ for evaluation with $f(x)$. $a(x)$ internally relies on a Gaussian process model $m(X, y)$ to generate new values of $x$.
 
 The optimization process itself is as follows:
 
@@ -67,4 +73,65 @@ Repeat the optimization process in steps 3 and 4 until we finally get a value of
 <a href ="https://towardsdatascience.com/bayesian-optimization-with-python-85c66df711ec">Link di riferimento</a>
 
     Esistono librerie python che ci possono permettere di utilizzare questo algoritmo
+
+Codice  python: 
+
+```python 
+
+# Prepare the data.
+cancer = load_breast_cancer()
+X = cancer["data"]
+y = cancer["target"]
+X_train, X_test, y_train, y_test = train_test_split(X, y,stratify = y,random_state = 42)scaler = MinMaxScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)# Define the black box function to optimize.
+
+def black_box_function(C):
+    # C: SVC hyper parameter to optimize for.
+    model = SVC(C = C)
+    model.fit(X_train_scaled, y_train)
+    y_score = model.decision_function(X_test_scaled)
+    f = roc_auc_score(y_test, y_score)
+    return f# Set range of C to optimize for.
+
+# bayes_opt requires this to be a dictionary.
+pbounds = {"C": [0.1, 10]}# Create a BayesianOptimization optimizer,
+
+# and optimize the given black_box_function.
+optimizer = BayesianOptimization(f = black_box_function,pbounds = pbounds, verbose = 2,
+random_state = 4)
+optimizer.maximize(init_points = 5, n_iter = 10)
+print("Best result: {}; f(x) = {}.".format(optimizer.max["params"], optimizer.max["target"]))
+```
+
+
+# Regressione logistica 
+
+Per regressione logistica si intende l'analisi di regressione ch esi conduce quando la variabile dipendente è *dicotomica*, ovvero binaria. È ovviamente un'analisi predittiva. 
+
+Il modello di regressione logistica, anche chiamato $logit(p)$, si compone dalle seguenti variabili 
+
+* **Y**: variabile dipendente. Assume valore 0 quando l'evento non si verifica e valore 1 quando l'evento si verifica. 
+* $X_i, \space i = 1,...,n$: variabili dipendenti o **regressori**. Possono avere qualsiasi natura e rappresentano i fattori di rischio che influenzano la variabile Y. 
+
+Il modello da stimare è dato dall'espressione
+
+$Y = ln(\frac {p}{1-p}) = \beta_0 + \beta_1 *X_1 + \beta_2*X_2 + ...+\beta_n * X_n + \epsilon$
+
+Che può essere anche espressa in termini di probabilità $p$
+
+$p = \frac {1} {\beta_0 + \beta_1 *X_1 + \beta_2*X_2 + ...+\beta_n * X_n} + \epsilon $
+
+### Coefficienti di regressione
+
+Gli esponenziali dei coefficienti $\beta_i$ rappresentano una misura che quantifica quanto più è "alta"la probabilità che si verifichi l'evento. 
+In maniera più rigorosa: 
+
+*I coefficienti $\beta_i$ si interpretano come l’**odds ratio (OR)** di accadimento dell'evento per ogni incremento della variabile indipendente, al netto delle altre variabili indipendenti.* 
+
+I coefficienti sono quindi associati ad ogni variabile indipendente $X_i$, e rappresentano il "peso"che la variabile ha nel calcolo della probabilità che l'evento si verifichi. In particolare abbiamo
+
+* Quando $\beta_i$ è positivo allora $OR > 1$ e quindi la variabile associata $X_i$ ha un peso sul verificarsi dell'evento
+* Quando il valore di $\beta_i$ è negativo allora $OR < 1$, quindi la variabile associata $X_i$ ha un peso sul **NON** verificarsi dell'evento
+* Quando $\beta_i$ è nullo, $X_i$ non influisce sulla variabile dipendente Y. 
 
