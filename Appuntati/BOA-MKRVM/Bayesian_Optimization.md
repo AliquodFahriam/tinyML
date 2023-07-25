@@ -1,4 +1,5 @@
-# Adaptive Maximum Correlation Kurtosis Deconvolution (AMCKD) 
+# Adaptive Maximum Correlation Kurtosis Deconvolution (AMCKD)
+
 *Ciò che segue è invenzione di chatGPT* 
 
 <a href="https://chat.openai.com/share/7fb2ce92-1112-4faa-b712-6306edace401">Link alla conversazione</a>
@@ -27,6 +28,7 @@ McDonald et al. *"Maximum correlated Kurtosis Deconvolution and application on g
     che viene utilizzato per selezionare due parametri chiave quali M ed L
 
 # Intinsic Time-Scale Decomposition (ITD)
+
 *Ciò che segue è invenzione di chatGPT* 
 
 *"La decomposizione intrinseca della scala temporale (intrinsic time-scale decomposition) è un metodo utilizzato per analizzare le serie temporali, al fine di identificare e separare le variazioni su diverse scale temporali presenti nei dati. Questa tecnica è particolarmente utile nell'ambito della previsione e analisi delle serie temporali non stazionarie, in cui i modelli tradizionali potrebbero non essere in grado di catturare le variazioni su diverse scale.*
@@ -44,28 +46,25 @@ McDonald et al. *"Maximum correlated Kurtosis Deconvolution and application on g
 ***Dal portale di MATLAB***: 
 Intrinsic Time-Scale Decomposition (ITD) is an adaptive and data-driven method like Empirical Mode Decomposition (EMD). It can decompose a complex signal into several Proper Rotation Components (PRCs) and a residual. 
 
-
 # The Bayesian Optimization Algorithm (BOA)
 
 Permette di ottimizzare funzioni *black-box* che sarebbero difficili da valutare. Ovvero che richiederebbero enormi risorse di calcolo e i cui meccanismi interni non possono essere compresi con precisione. 
 
 Un esempio di ciò è l'ottimizzazione degli **iperparametri** per una rete neurale per cui ogni iterazione potrebbe richiedere alcuni giorni. Un metodo efficiente richiede di trovare il miglior insieme di iperparametri utilizzando il numero minimo di iterazioni. Questo metodo si chiama **Bayesian Optimization**. 
 
-
-
 Bayesian optimization is a **machine learning** based optimization algorithm <mark>used to find the parameters that globally optimizes a given black box function</mark>. There are 2 important components within this algorithm:
 
 * The black box function to optimize: $f(x)$.<br>
-We want to find the value of $x$ which globally optimizes $f(x)$. The $f(x)$ is also sometimes called the objective function, the target function, or the loss function depending on the problem. In general, we only have knowledge about the inputs and outputs of $f(x)$.
+  We want to find the value of $x$ which globally optimizes $f(x)$. The $f(x)$ is also sometimes called the objective function, the target function, or the loss function depending on the problem. In general, we only have knowledge about the inputs and outputs of $f(x)$.
 
 * The acquisition function: <br>
-$a(x)$, which is used to generate new values of $x$ for evaluation with $f(x)$. $a(x)$ internally relies on a Gaussian process model $m(X, y)$ to generate new values of $x$.
+  $a(x)$, which is used to generate new values of $x$ for evaluation with $f(x)$. $a(x)$ internally relies on a Gaussian process model $m(X, y)$ to generate new values of $x$.
 
 The optimization process itself is as follows:
 
 1. Define the black box function $f(x)$, the acquisition function $a(x)$ and the search space of the parameter x.
 2. Generate some initial values of $x$ randomly, and measure the corresponding outputs from $f(x)$.
-3. Fit a Gaussian process model $m(X, y)$ onto $X = x$ and $y = f(x)$. In other words,$ m(X, y)$ serves as a surrogate model for $f(x)$!
+3. Fit a <a href="">Gaussian process model</a> $m(X, y)$ onto $X = x$ and $y = f(x)$. In other words,$ m(X, y)$ serves as a surrogate model for $f(x)$!
 4. The acquisition function $a(x)$ then uses $m(X, y)$ to generate new values of $x$ as follows. Use $m(X, y)$ to predict how $f(x)$ varies with $x$. The value of $x$ which leads to the largest predicted value in $m(X, y)$ is then suggested as the next sample of $x$ to evaluate with $f(x)$.
 
 Repeat the optimization process in steps 3 and 4 until we finally get a value of x that leads to the global optimum of f(x). Note that all historical values of x and f(x) should be used to train the Gaussian process model m(X, y) in the next iteration — as the number of data points increases, m(X, y) becomes better at predicting the optimum of f(x).
@@ -76,8 +75,7 @@ Repeat the optimization process in steps 3 and 4 until we finally get a value of
 
 Codice  python: 
 
-```python 
-
+```python
 # Prepare the data.
 cancer = load_breast_cancer()
 X = cancer["data"]
@@ -104,8 +102,7 @@ optimizer.maximize(init_points = 5, n_iter = 10)
 print("Best result: {}; f(x) = {}.".format(optimizer.max["params"], optimizer.max["target"]))
 ```
 
-
-# Regressione logistica 
+# Regressione logistica
 
 Per regressione logistica si intende l'analisi di regressione ch esi conduce quando la variabile dipendente è *dicotomica*, ovvero binaria. È ovviamente un'analisi predittiva. 
 
@@ -134,4 +131,3 @@ I coefficienti sono quindi associati ad ogni variabile indipendente $X_i$, e rap
 * Quando $\beta_i$ è positivo allora $OR > 1$ e quindi la variabile associata $X_i$ ha un peso sul verificarsi dell'evento
 * Quando il valore di $\beta_i$ è negativo allora $OR < 1$, quindi la variabile associata $X_i$ ha un peso sul **NON** verificarsi dell'evento
 * Quando $\beta_i$ è nullo, $X_i$ non influisce sulla variabile dipendente Y. 
-

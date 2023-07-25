@@ -17,5 +17,3 @@ Per quanto riguarda i risultati della fase di denoising abbiamo una differenza i
 Un ulteriore approccio interessante è dato dalla volontà degli autori di non fermarsi mai a decidere manualmente gli "*iperparametri*" dei vari algoritmi, ma di utilizzare sempre algoritmi di ricerca o di ottimizzazione. 
 
 In particolare per quanto riguarda gli iperparametri dell'algoritmo MKRVM viene utilizzato il ***Bayesian Optimization Algorithm*** (Il cui funzionamento è spiegato nel documento di cui sopra), mentre per quanto riguarda **AMCKD**, ovvero il secondo "blocco" addetto al denoising, si utilizza un algoritmo di ricerca detto ***Sparrow Search*** (che possiamo trovare all'interno dei riferimenti dell'articolo). 
-
-
