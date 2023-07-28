@@ -66,61 +66,24 @@ Esistono diversi metodi per applicare la sogliatura nella Wavelet Packet Analysi
 
 L'efficacia della sogliatura dipende dalla corretta scelta del valore della soglia stessa. Un valore di soglia troppo alto potrebbe eliminare informazioni significative, mentre un valore troppo basso potrebbe non eliminare a sufficienza il rumore. La scelta della soglia può essere guidata da tecniche di stima del rumore o da criteri soggettivi basati sulla natura del segnale e sugli obiettivi dell'analisi. Inoltre, la sogliatura può essere applicata anche in modo adattivo, dove il valore della soglia può variare in base al contenuto locale dei coefficienti di dettaglio.
 
-
-
 ## Applicazione del denoising migliorato
 
-Passo 1: in base alla frequenza di campionamento Fs del segnale, calcolare la larghezza della finestra Ld del filtro mediano con l'equazione (7).
-Passo 2: dopo aver ottenuto la larghezza della finestra Ld, il segnale di rumore viene filtrato con il filtro mediano utilizzando la formula (2).
-Passo 3: effettuare la decomposizione dei pacchetti di onde per il segnale filtrato con il filtro mediano, e utilizzare la funzione di costo M(x) espressa nella formula (3) come criterio di giudizio per determinare se la decomposizione prosegue o meno, al fine di determinare la scala di decomposizione ottimale e la base di pacchetti di onde ottimale.
-Passo 4: utilizzare il valore di soglia migliorato e l'espressione della funzione di soglia per elaborare il coefficiente wj,k di ciascun pacchetto di onde e ottenere il nuovo coefficiente stimato w⌢j,k.
-Passo 5: ricostruire il segnale con il nuovo coefficiente wj,k dopo la contrazione della soglia su ciascuna scala per ottenere il segnale di denoising s⌢(n), che è una stima del segnale di vibrazione reale s(n).
-
-
+Passo 1: in base alla frequenza di campionamento $F_s$ del segnale, calcolare la larghezza della finestra $L_d$ del filtro mediano con l'equazione (7).
+Passo 2: dopo aver ottenuto la larghezza della finestra $L_d$, il segnale di rumore viene filtrato con il filtro mediano utilizzando la formula (2).
+Passo 3: effettuare la decomposizione dei pacchetti di onde per il segnale filtrato con il filtro mediano, e utilizzare la funzione di costo $M(x)$ espressa nella formula (3) come criterio di giudizio per determinare se la decomposizione prosegue o meno, al fine di determinare la scala di decomposizione ottimale e la base di pacchetti di onde ottimale.
+Passo 4: utilizzare il valore di soglia migliorato e l'espressione della funzione di soglia per elaborare il coefficiente $w_{j,k}$ di ciascun pacchetto di onde e ottenere il nuovo coefficiente stimato $\hat w_{j,k}$.
+Passo 5: ricostruire il segnale con il nuovo coefficiente $w_{j,k}$ dopo la contrazione della soglia su ciascuna scala per ottenere il segnale di denoising $\hat s(n)$, che è una stima del segnale di vibrazione reale $s(n)$.
 
 #### Equazioni di riferimento
 
 $L_d = 2L_sF_s$             (7)
 
-
-
-
-
-
-
 $y(n) = Med[x(n-d),..., x(n),...,x(n-d)]$             (2)
-
-
-
-
-
-
 
 $M(x) = -\sum_j p_j log_2(p_j), \space \space \space p_j = \frac {|x_j|^2} {||x||^2}$                            (3)
 
-
-
 $\begin{cases} 0, & \text{if} \space \space |w_{j,k}| \lt T \\
-sgn(w_{j,k})(|w_{j,k}|³ - T^3)^{\frac {1}{3} }, &\text{otherwise} \space \space   \end{cases}$
-
-```
-\begin{cases}
-    \frac{x^2-x}{x},& \text{if } x\geq 1\\
-    0,              & \text{otherwise}
-\end{cases}
-```
-
-
-
-
-
-
-
-
-
-
-
-
+sgn(w_{j,k})(|w_{j,k}|³ - T^3)^{\frac {1}{3} }, &\text{otherwise} \space \space  |w_{j,k}| \ge T \end{cases} $        (10)
 
 
 
