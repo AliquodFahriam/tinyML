@@ -72,14 +72,66 @@ Le colonne corrispondono a
 
 ## La riproduzione
 
-### Caricamento dei dati e prima elaborazione
+### Caricamento dei dati e prima elaborazione (1-4)
 
 Il caricamento dei dati in memoria viene effettuato utilizzando le librerie *Pandas* e *NumPy*, i dati vengono caricati in 4 dataframe i quali corrispondono ai vari FD0001-4.txt che si trovano all'interno del dataset. 
 Essi vengono tenuti separati per semplicità di confronto con il paper di cui sopra. 
 <figure>
-<img src='/home/aliquodfahriam/tinyML/DrawIO/Diagramma senza titolo.drawio.png' id='train'> 
+<img src='../DrawIO/Diagramma senza titolo.drawio.png' id='train'> 
 
 <figcaption align='center'><i>Rappresentazione grafica della lista train</i></figcaption>
 </figure>
 
+#### Considerazioni sui sensori (5-15)
+All'interno della sezione di *Data Preprocessing* del paper in esame viene detto:
+
+>After reviewing all sensors, it is found that some of them
+have constant values, hence we can remove them. Therefore,
+14 sensors remained for each sub-dataset (sensor 2, 3, 4, 7,
+8, 9, 11, 12, 12, 13, 14, 15, 17 and 20).
+
+**Tuttavia** come appreso tramite l'analisi dei dati all'interno del training set ciò non è vero per ogni parte componente il dataset. 
+
+È invece vero per quanto riguarda **FD0001 e FD0003**. La causa è probabilmente da ricercarsi in quanto detto pocanzi per quanto riguarda le condizioni di volo registrate dai sensori, si ricorda infatti che FD0001 e FD0003 rappresentano voli in condizioni **costanti** mentre FD0002 e FD0004 ne rappresentano altri in condizioni **miste**. 
+
+Riportiamo i grafici che rappresentano i valori dei sensori rispettivamente in FD0001 e FD0002:
+
+<figure>
+<img src='../DrawIO/FD0001_sensors.png'>
+<figcaption align='center'><i>Sensori FD0001</i></figcaption>
+</figure>
+
+<figure>
+<img src='../DrawIO/FD0002_sensors.png'>
+<figcaption align = 'center'><i>Sensori FD0002</i></figcaption>
+</figure>
+
+Gli autori del paper hanno preso la decisione di eliminarli da ogni componente del dataset. La *ratio* che li ha portati a questa decisione non si evince dal documento, tuttavia si potrebbe ipotizzare che i valori di quei sensori siano costanti per ogni condizione e che quindi rappresentino una *"sommatoria di tratti costanti a seconda della condizione di volo"*, ma questa rimane comunque soltanto un'ipotesi. 
+
+Per correttezza nella riproduzione (e per rendere i risultati maggiormente comparabili) abbiamo scelto di rimuovere gli stessi sensori anche noi. 
+
+I sensori rimossi sono: 
+- Sensor 1
+- Sensor 5 
+- Sensor 10 
+- Sensor 16
+- Sensor 18
+- Sensor 19
+
+### Min Max Scaling (16-24)
+
+Dato che i sensori sono affetti da rumore si è deciso di applicare del Min Max scaling. Ciò viene effettuato tramite l'oggetto **MinMaxScaler** presente nella libreria *sklearn* il quale si occuperà di effettuare l'operazione su ogni dataframe istanziato all'interno della lista *train*. 
+Per sicurezza abbiamo verificato che la distribuzione dei dati non fosse cambiata a seguito di qualche errore nel codice. Riportiamo  di seguito i grafici delle distribuzioni dei dati dei vari sensori prima e dopo lo scaling: 
+
+<figure>
+<img src='../DrawIO/sensor_density_default.png'>
+<figcaption align='center'><i>Distribuzione FD0001 pre-scaling</i></figcaption>
+</figure>
+
+<figure>
+<img src='../DrawIO/sensor_density_scaled.png'>
+<figcaption align='center'><i>Distribuzione FD0001 post-scaling</i></figcaption>
+</figure>
+
+NB:*Tutti i grafici sono stati realizzati tramite le librerie Seaborn e Matplotlib di Python*
 
