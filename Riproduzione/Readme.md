@@ -135,3 +135,105 @@ Per sicurezza abbiamo verificato che la distribuzione dei dati non fosse cambiat
 
 NB:*Tutti i grafici sono stati realizzati tramite le librerie Seaborn e Matplotlib di Python*
 
+### Modelli
+
+Gli autori del paper che stiamo cercando di riprodurre propongono come migliori modelli due reti **LSTM** (Long Short Term memory) una di dimensioni ridotte mentre l'altra full size, esse sono rappresentate come segue:
+
+Model: "sequential_1"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ lstm_4 (LSTM)               (None, 30, 60)            18240     
+                                                                 
+ lstm_5 (LSTM)               (None, 30, 30)            10920     
+                                                                 
+ flatten_1 (Flatten)         (None, 900)               0         
+                                                                 
+ dense_3 (Dense)             (None, 30)                27030     
+                                                                 
+ dense_4 (Dense)             (None, 15)                465       
+                                                                 
+ dense_5 (Dense)             (None, 1)                 16        
+                                                                 
+=================================================================
+Total params: 56,671
+Trainable params: 56,671
+Non-trainable params: 0
+_________________________
+
+Layer (type)                Output Shape              Param #   
+=================================================================
+ lstm (LSTM)                 (None, 30, 128)           73728     
+                                                                 
+ dropout (Dropout)           (None, 30, 128)           0         
+                                                                 
+ lstm_1 (LSTM)               (None, 30, 64)            49408     
+                                                                 
+ dropout_1 (Dropout)         (None, 30, 64)            0         
+                                                                 
+ lstm_2 (LSTM)               (None, 30, 32)            12416     
+                                                                 
+ dropout_2 (Dropout)         (None, 30, 32)            0         
+                                                                 
+ lstm_3 (LSTM)               (None, 30, 16)            3136      
+                                                                 
+ dropout_3 (Dropout)         (None, 30, 16)            0         
+                                                                 
+ flatten (Flatten)           (None, 480)               0         
+                                                                 
+ dense (Dense)               (None, 64)                30784     
+                                                                 
+ dense_1 (Dense)             (None, 32)                2080      
+
+Total params: 171,585
+Trainable params: 171,585
+Non-trainable params: 0
+
+durante la nostra riproduzione verranno chiamate LSTMsmallModel e LSTMlargeModel.
+Verranno inoltre valutate tramite RMSE come funzione di loss e tramite una funzione asimmetrica come metrica per il punteggio. 
+
+***Funzione di Score:***
+$$
+Score = \begin{cases} \sum^{N}_{n=1} e^{\frac {-d_i} {13}} - 1   , & \text{if} \space \space d_i \lt 0 \\
+\sum^{N}_{n=1} e^{\frac {d_i} {10}} - 1, &\text{otherwise} \space \space \end{cases}
+$$
+***RMSE:***
+
+$$
+RMSE = \sqrt{\frac{1}{N}\sum^N_{i=1} d_i^2}
+$$
+
+Vengono inoltre applicate dagli autori delle ottimizzazioni ulteriori per quanto riguarda i modelli di cui sopra ai fini di una minor richiesta di risorse, il che risulta cruciale ai fini di un approccio di tipo TinyML. 
+
+I modelli sono stati sviluppati utilizzando la libreria *Tensorflow* di python e il dataset è stato diviso utilizzando il criterio 80/20, il che significa che l'80% dei dati di training è stato utilizzato per l'addestramento mentre la parte rimanente è stata utilizzata per la *validazione* in fase di addestramento.
+
+### Considerazioni post addestramento dei modelli
+
+Abbiamo deciso inizialmente di addestrare i modelli su tutti i dati disponibili contemporaneamente tuttavia dal paper che stiamo cercando di riprodurre sembra che l'addestramento dei modelli sia stato reiterato per ognuna delle componenti del dataset in maniera separata. 
+
+Ovvero ad esempio la rete LSTM *"piccola"* è stata addestrata prima sui dati di FD0001, poi su quelli di FD0002 e così via... 
+
+Ciò a primo impatto è sembrato strano e si è tentato un approccio che cercasse di fare in modo che tutti i dati contemporaneamente fossero utilizzabili per l'addestramento, tuttavia ciò non ha portato a risultati soddisfacenti, di conseguenza proveremo a creare reti addestrate specificamemnte sulle varie componenti del datast. 
+
+### Proposte per il miglioramento 
+
+Una proposta per il miglioramento di questo tipo di condizione potrebbe essere quella di dividere il dataset in due parti, da un lato avremmo le due componenti a condizioni costanti, ovvero: 
+- FD0001 
+- FD0003
+
+mentre dall'altra avremmo le due componenti in condizioni miste: 
+- FD0002
+- FD0004
+
+A questo punto addestrare su questi due gruppi di dati due reti separate e, in seguito creare un'ultima rete (un **classificatore**), il quale dovrebbe avere lo scopo di indirizzare i dati verso la rete che è più adatta a calcolare la RUL. 
+Questa idea tuttavia presenta dei problemi di fondo che riguardano l'input delle reti di tipo LSTM. 
+
+Una rete di questo tipo ha bisogno di un input del seguente tipo: 
+- Campioni
+- *Time Steps* 
+- *Features* 
+
+I time steps sarebbero il numero di campioni per ogni sequenza di dati passati alla rete. Ciò significa che il classificatore dovrebbe analizzare i dati in batch da *time steps* elementi e classificarli tutti insieme allo stesso modo il che potrebbe comportare degli errori e dei problemi. 
+
+Nel paper che stiamo cercando di riprodurre la dimensione del vettore di input alla rete è la seuente: 
+(batch_size, 30, 14). 
