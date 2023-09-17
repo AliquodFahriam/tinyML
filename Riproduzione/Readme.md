@@ -190,7 +190,7 @@ Trainable params: 171,585
 Non-trainable params: 0
 
 durante la nostra riproduzione verranno chiamate LSTMsmallModel e LSTMlargeModel.
-Verranno inoltre valutate tramite RMSE come funzione di loss e tramite una funzione asimmetrica come metrica per il punteggio. 
+Verranno inoltre valutate tramite RMSE e tramite una funzione asimmetrica come metriche per il punteggio. 
 
 ***Funzione di Score:***
 $$
@@ -237,3 +237,23 @@ I time steps sarebbero il numero di campioni per ogni sequenza di dati passati a
 
 Nel paper che stiamo cercando di riprodurre la dimensione del vettore di input alla rete è la seuente: 
 (batch_size, 30, 14). 
+
+### Aggiornamenti 
+
+I risultati che otteniamo non si avvicinano per nulla con quelli ottenuti dagli autori del paper che stiamo cercando di riprodurre, ciò ci porta a pensare che il modo in cui elaboriamo i dati prima di darli in input alle reti neurali non sia ottimale, in particolare abbiamo: 
+
+> Last cycles of an engine life are more significant than the initial cycles. Thus, a piecewise linear RUL function is applied, where a max RUL value is set if the true RUL is greater than LSTM this max value, as shown in Eq. 2. In this way, we ignore data whose true RULs are greater than the maximum limit to pay attention to the degradation data and we adopt a max RUL value of **125**, as used in [<a href='https://ieeexplore.ieee.org/abstract/document/8998569?casa_token=m6jBHKB0s_4AAAAA:qt23ITJDbDXkIeKp7wxjpRmv3OlJRg3otquWxHHAr1zO_nx1AwkSb5kNiqVw0S5gB_tAFjuv'>19</a>] and other related works.
+
+Per di più anche la funzione di loss deve essere modificata in favore di una che sia maggiormente adatta alle nostre esigenze rispetto all'RMSE. In particolare abbiamo: 
+$$
+    Loss = \begin{cases} 2ad_i , & \text{if} \space \space d_i \lt 0 \\
+    2(a+(1-2a))d_i, &\text{otherwise} \space \space \end{cases}
+$$
+
+Per come viene descritta nel seguente paper: <a href = 'https://ieeexplore.ieee.org/abstract/document/9207051?casa_token=mj5ETeDbMFIAAAAA:ZCf8jWyvO0wN6k7igZNQtXoMJGq5dSqb7YYiaeHxqL7M5L0Y1jkyrk8HzGxoq3_bnmy7tOHI'>Asymmetric loss
+functions for deep learning early predictions of remaining useful life in
+aerospace gas turbine engines,</a>
+
+Una funzione asimmetrica di questo tipo è necessaria ai fini di penalizzare le predizioni che vanno oltre la RUL effettiva.
+
+Una volta effettuate le precedenti modifiche bisogna comprendere il motivo per cui non viene implementata correttamente la funzione di score custom che abbiamo implementato 
