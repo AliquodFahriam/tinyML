@@ -141,7 +141,7 @@ Gli autori del paper che stiamo cercando di riprodurre propongono come migliori 
 
 Model: "sequential_1"
 _________________________________________________________________
- Layer (type)                Output Shape              Param #   
+ Layer (type)                Output Shape              Param 
 =================================================================
  lstm_4 (LSTM)               (None, 30, 60)            18240     
                                                                  
@@ -191,6 +191,13 @@ Non-trainable params: 0
 
 durante la nostra riproduzione verranno chiamate LSTMsmallModel e LSTMlargeModel.
 Verranno inoltre valutate tramite RMSE e tramite una funzione asimmetrica come metriche per il punteggio. 
+
+Come iperparametri troviamo: 
+- Optimizer: Adam 
+- Initial learning rate: 0.1 
+- Epochs: 50, 100, 80, 150
+- Batch size: 256
+- Alpha value: 
 
 ***Funzione di Score:***
 $$
@@ -257,3 +264,19 @@ aerospace gas turbine engines,</a>
 Una funzione asimmetrica di questo tipo è necessaria ai fini di penalizzare le predizioni che vanno oltre la RUL effettiva.
 
 Una volta effettuate le precedenti modifiche bisogna comprendere il motivo per cui non viene implementata correttamente la funzione di score custom che abbiamo implementato 
+
+### Il problema della funzione di loss: 
+Ovviamente la funzione di loss per come scritta sopra non potrebbe funzionare correttamente. Posto $d_i$ come la differenza tra il valore predetto e il valore corretto di RUL ($d_i = y_{pred} - y_{true}$) nel caso in cui y_true fosse maggiore ci ritroveremmo ad avere un valore della funzione di loss negativo, il che sarebbe fuorviante per l'apprendimento della rete. 
+
+Ci teniamo a precisare che la funzione scritta sopra è riportata esattamente per come scritta all'interno dell'articolo, il quale tuttavia fa riferimento ad un <a href = 'https://ieeexplore.ieee.org/abstract/document/9207051?casa_token=mj5ETeDbMFIAAAAA:ZCf8jWyvO0wN6k7igZNQtXoMJGq5dSqb7YYiaeHxqL7M5L0Y1jkyrk8HzGxoq3_bnmy7tOHI'>secondo documento</a> il quale la riporta in questa maniera: 
+
+$$
+    Loss = \begin{cases} 2a(\hat y_i - y_i )^2 , & \text{if} \space \space d_i \lt 0 \\
+    2(a+(1-2a))(\hat y_i - y_i )^2, &\text{otherwise} \space \space \end{cases}
+$$
+
+La ovvia differenza è data dai quadrati i quali risolvono il problema descritto sopra. 
+
+Il documento di cui sopra non si limita a descrivere l'utilizzo di questa specifica funzione di loss ma fornisce innanzitutto un discreto *background* sulle funzioni di loss asimmetriche le quali possono risultare estremamente utili per quanto riguarda l'addestramento di modelli con l'obiettivo di calcolare la vita rimanente utile di un elemento in condizioni critiche. 
+
+In particolare, la funzione di cui sopra è definita come *Quadratic-Quadratic*(QUAD - QUAD) ma si fa riferimento anche a *Mean Square Logarithmic Error-Mean Square Error* (MSLE-MS), *Linear-Mean Square Error* (LIN-MSE), Linear-Linear(LIN-LIN) le quali potrebbero risultare utili in altri contesti applicativi e magari con altri set di dati.
