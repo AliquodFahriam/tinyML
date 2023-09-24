@@ -204,6 +204,14 @@ $$
 Score = \begin{cases} \sum^{N}_{n=1} e^{\frac {-d_i} {13}} - 1   , & \text{if} \space \space d_i \lt 0 \\
 \sum^{N}_{n=1} e^{\frac {d_i} {10}} - 1, &\text{otherwise} \space \space \end{cases}
 $$
+
+<figure>
+<img src='../DrawIO/scoring_function.png'></img>
+<figcaption align= 'center'>Score value as the error increases. The score is
+calculated using the scoring function where late predictions receive higher penalisation </figcaption>
+</figure>
+
+
 ***RMSE:***
 
 $$
@@ -245,7 +253,7 @@ I time steps sarebbero il numero di campioni per ogni sequenza di dati passati a
 Nel paper che stiamo cercando di riprodurre la dimensione del vettore di input alla rete è la seuente: 
 (batch_size, 30, 14). 
 
-### Aggiornamenti 
+### Aggiornamenti 18/09/23
 
 I risultati che otteniamo non si avvicinano per nulla con quelli ottenuti dagli autori del paper che stiamo cercando di riprodurre, ciò ci porta a pensare che il modo in cui elaboriamo i dati prima di darli in input alle reti neurali non sia ottimale, in particolare abbiamo: 
 
@@ -265,7 +273,7 @@ Una funzione asimmetrica di questo tipo è necessaria ai fini di penalizzare le 
 
 Una volta effettuate le precedenti modifiche bisogna comprendere il motivo per cui non viene implementata correttamente la funzione di score custom che abbiamo implementato 
 
-### Il problema della funzione di loss: 
+#### Il problema della funzione di loss: 
 Ovviamente la funzione di loss per come scritta sopra non potrebbe funzionare correttamente. Posto $d_i$ come la differenza tra il valore predetto e il valore corretto di RUL ($d_i = y_{pred} - y_{true}$) nel caso in cui y_true fosse maggiore ci ritroveremmo ad avere un valore della funzione di loss negativo, il che sarebbe fuorviante per l'apprendimento della rete. 
 
 Ci teniamo a precisare che la funzione scritta sopra è riportata esattamente per come scritta all'interno dell'articolo, il quale tuttavia fa riferimento ad un <a href = 'https://ieeexplore.ieee.org/abstract/document/9207051?casa_token=mj5ETeDbMFIAAAAA:ZCf8jWyvO0wN6k7igZNQtXoMJGq5dSqb7YYiaeHxqL7M5L0Y1jkyrk8HzGxoq3_bnmy7tOHI'>secondo documento</a> il quale la riporta in questa maniera: 
@@ -280,3 +288,63 @@ La ovvia differenza è data dai quadrati i quali risolvono il problema descritto
 Il documento di cui sopra non si limita a descrivere l'utilizzo di questa specifica funzione di loss ma fornisce innanzitutto un discreto *background* sulle funzioni di loss asimmetriche le quali possono risultare estremamente utili per quanto riguarda l'addestramento di modelli con l'obiettivo di calcolare la vita rimanente utile di un elemento in condizioni critiche. 
 
 In particolare, la funzione di cui sopra è definita come *Quadratic-Quadratic*(QUAD - QUAD) ma si fa riferimento anche a *Mean Square Logarithmic Error-Mean Square Error* (MSLE-MS), *Linear-Mean Square Error* (LIN-MSE), Linear-Linear(LIN-LIN) le quali potrebbero risultare utili in altri contesti applicativi e magari con altri set di dati.
+
+
+### Aggiornamenti 20/09/23
+
+A seguito dell'addestramento delle due reti LSTM che abbiamo descritto in precedenza per quanto riguarda la componente FD0001 del datast abbiamo ottenuto i seguenti risultati per quanto riguarda la funzione di loss: 
+- Small LSTM: 2912.22192
+- Large LSTM: 6115.06201
+
+Questi risultati non sono ancora soddisfacenti poiché, come riportato all'interno del documento <a href = 'https://ieeexplore.ieee.org/abstract/document/9207051?casa_token=mj5ETeDbMFIAAAAA:ZCf8jWyvO0wN6k7igZNQtXoMJGq5dSqb7YYiaeHxqL7M5L0Y1jkyrk8HzGxoq3_bnmy7tOHI'>Asymmetric loss
+functions for deep learning early predictions of remaining useful life in
+aerospace gas turbine engines</a>, il nostro target dovrebbe attestarsi intorno a **1647.3**
+
+Nonostante la distanza si aggiri intorno al 10%, e di conseguenza i risultati siano tutto sommato comparabili, ciò è vero soltanto per la *Small LSTM*, il che è in controtendenza rispetto ai risultati ottenuti nel paper che stiamo cercando di riprodurre. Una separazione così drastica non è giustificabile e, prima di procedere ulteriormente con un confronto più approfondito alla luce delle metriche che gli autori hanno utilizzato ho deciso di mettere in luce alcune criticità della nostra particolare applicazione.
+
+#### La data preparation
+Il processo di data preparation si svolge come segue: 
+1. Vengono raccolte le varie componenti del dataset in data frames
+2. Vengono rimossi i sensori "*inutili*"
+3. **Vengono divisi i dati**
+3. Vengono formattati per essere dati in input durante la fase di addestramento. 
+
+Risulta particolarmente critico il punto 3.
+
+Cito testualmente: 
+> Thus, a piecewise linear RUL function is applied,
+where a max RUL value is set if the true RUL is greater than
+this max value, as shown in Eq. 2. In this way, we ignore data
+whose true RULs are greater than the maximum limit to pay
+attention to the degradation data and we adopt a max RUL
+value of 125, as used in [19] and other related works
+
+Una tale funzione non è stata da noi implementata poiché non risultava chiaro il suo funzionamento e il proposito che perseguiva.
+Ciò è stato chiarito dal documento: <a href = 'https://ieeexplore.ieee.org/abstract/document/9207051?casa_token=mj5ETeDbMFIAAAAA:ZCf8jWyvO0wN6k7igZNQtXoMJGq5dSqb7YYiaeHxqL7M5L0Y1jkyrk8HzGxoq3_bnmy7tOHI'>Asymmetric loss
+functions for deep learning early predictions of remaining useful life in
+aerospace gas turbine engines</a> il qale afferma: 
+
+>Furthermore, the value of the maximum cycle s capped at 100 and remained constant until degradation has
+occur as shown in Fig 2. This allows the deep learning models
+to differentiate between the healthy state (RUL = 100) and
+unhealthy state (RUL < 100). Even though degradation can
+happen randomly, the early stages of engine cycle are assumed
+to be usable and functional. The labels are the RUL cycle for
+each instance of the data.
+
+<figure>
+<img src='../DrawIO/capped_rul.png'>
+<figcaption align='center'>Maximum RUL of gas turbine engine are capped to
+100 cycle to distinguish the healthy state and degradation state
+during preprocessing stage.</figcaption>
+</figure>
+
+Nel caso del paper che stiamo cercando di riprodurre questo valore andrebbe settato a 125. 
+
+Proseguendo in questa direzione inoltre una ulteriore accortezza va rispettata: 
+
+>Finally, after the aforementioned data preprocessing steps,each train set is splitted into the following datasets: train (for ML model building) and validation (for ML model to validateon unseen data) with a 80/20% split, **with caution that the segment of each engine is not separated**
+
+Nonostante la maggior parte del paragrafo precedente sia stata rispettata, non abbiamo tuttavia tenuto conto dell'importanza nel non separare i dati dello stesso motore, i quali, invece, sicuramente si "mescolano" seguendo l'algoritmo da noi proposto. 
+
+Il prossimo passo quindi è quello di comprendere come elaborare i dati nella maniera in cui gli autori hanno pensato di elaborarli poiché non è l'unico lavoro che fa riferimento a questo tipo di data preparation per questo dataset. 
