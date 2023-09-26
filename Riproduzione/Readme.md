@@ -348,3 +348,21 @@ Proseguendo in questa direzione inoltre una ulteriore accortezza va rispettata:
 Nonostante la maggior parte del paragrafo precedente sia stata rispettata, non abbiamo tuttavia tenuto conto dell'importanza nel non separare i dati dello stesso motore, i quali, invece, sicuramente si "mescolano" seguendo l'algoritmo da noi proposto. 
 
 Il prossimo passo quindi è quello di comprendere come elaborare i dati nella maniera in cui gli autori hanno pensato di elaborarli poiché non è l'unico lavoro che fa riferimento a questo tipo di data preparation per questo dataset. 
+
+### Aggiornamenti 26/09/2023 
+
+La funzione per il calcolo della RUL in fase di training (ovvero per calcolare i label dei valori del dataset) sembra essere qualcosa di universalmente accettato lavorando su questo dataset. 
+
+Per quanto riguarda l'applicazione pratica, procediamo come segue: 
+- Innanzitutto creiamo un nuovo notebook in cui ricaricare il tutto, così da conservare i risultati del vecchio che potrebbero essere utili
+
+- Dopodiché implementiamo la funzione lineare a tratti facendo in modo che, una volta trattati i dati che devono essere di dimensione (*batch_size*, 30, 14) il valore corrispettivo della RUL sia al massimo 100 e cominci a diminuire quando effettivamente supera il valore desiderato. (Quindi nei primi 100 cicli il valore della RUL sarà sempre 100 piuttosto che valori superiori). 
+
+L'unico problema rimane sempre quello di fare in modo che, durante la selezione dei campioni facenti parte di una sequenza, essi facciano sempre riferimento alla stessa unità e non ne vengano mischiate di successive. 
+
+<figure>
+<img src='../DrawIO/window_problem.drawio.png'>
+<figcaption align='center'>Problema della finestra con diversi unit number</figsize>
+</figure>
+
+<a href = 'https://github.com/biswajitsahoo1111/rul_codes_open/tree/master'>Link</a>
