@@ -366,3 +366,8 @@ L'unico problema rimane sempre quello di fare in modo che, durante la selezione 
 </figure>
 
 <a href = 'https://github.com/biswajitsahoo1111/rul_codes_open/tree/master'>Link</a>
+
+#### La *piecewise-linear function*
+
+La funzione *process_targets* all'interno del file <a href='Riproduzione_PW/riproduzione_pw.ipynb'>*riproduzione_pw*</a> è la cosiddetta funzione **lineare a tratti** di cui parliamo estensivamente all'interno del readme ci permette dunque di calcolare il valore della RUL da assegnare ad ogni elemento del dataset. 
+La funzione prende in input la lunghezza totale dei dati e la *"early_rul"* la quale rappresenta il valore massimo possibile di RUL (imponiamo ciò poiché come descritto dalla letteratura dovrebbe permettere alla rete di comprendere meglio quando il componente è in salute o meno), il quale poi viene decrementato in maniera lineare quando la *"data_length"* supera il valore di *early_rul*. La funzione che abbiamo appena descritto si trova all'interno della cella *[4]* del file linkato in precedenza.
