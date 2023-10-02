@@ -377,3 +377,83 @@ La funzione prende in input la lunghezza totale dei dati e la *"early_rul"* la q
 Come abbiamo già abbondantemente sottolineato, per poter lavorare con sequenze temporali di questo tipo e, soprattutto, per poterlo fare con reti di tipo LSTM, abbiamo bisogno di dividere i dati in sequenze da $n$ elementi. In questo caso, come da istruzioni (e da stato dell'arte) abbiamo posto un valore per la lunghezza delle sequenze di 30 elementi. 
 
 La funzione che fa ciò si chiama *process_input_data_with_targets*, la quale crea le strutture dati necessarie a contenere i dati nella forma corretta, ovvero sequenze da 30 elementi con passo 1. Stavolta tutto il procedimento è fatto in maniera manuale piuttosto che con la funzione *pad_sequences* di *keras*
+146.14778
+
+### Aggiornamenti 2/10/23
+
+#### LSTM Small
+Siamo riusciti a creare un modello di small LSTM che abbia delle metriche abbastanza soddisfacenti e paragonabili con quelle che sono state riportate dal paper che stiamo cercando di riprodurre. 
+Il modello small LSTM a, seguito delle modifiche apportate al codice di preparazione dei dati, è riuscito ad ottenere un valore per la funzione di loss pari a: loss: 156.5530, il che è ottimo, soprattutto se messo in correlazione con il documento <a href = 'https://ieeexplore.ieee.org/abstract/document/9207051?casa_token=mj5ETeDbMFIAAAAA:ZCf8jWyvO0wN6k7igZNQtXoMJGq5dSqb7YYiaeHxqL7M5L0Y1jkyrk8HzGxoq3_bnmy7tOHI'>Asymmetric loss
+functions for deep learning early predictions of remaining useful life in
+aerospace gas turbine engines</a> in cui il valore della funzione di loss perquesto stesso tipo di rete era pari a 1647.3.
+
+Attenzione però, i dati di cui siamo in possesso al momento riguardano esclusivamente la fase di training e validation, non di testing. 
+Tuttavia il valore della funzione di loss in fase di validazione può essere un buon metro per comprendere se la rete ha generalizzato in maniera corretta o meno e, in questo caso il valore della Loss in fase di validazione è di 146.14 per la nostra LSTM_small.
+
+Adesso andranno condotti test utilizzando RMSE e l'S score come definiti pocanzi, ovvero: 
+
+$$
+S \space score = \begin{cases} \sum^{N}_{n=1} e^{\frac {-d_i} {13}} - 1   , & \text{if} \space \space d_i \lt 0 \\
+\sum^{N}_{n=1} e^{\frac {d_i} {10}} - 1, &\text{otherwise} \space \space \end{cases}
+$$
+
+$$
+RMSE = \sqrt{\frac{1}{N}\sum^N_{i=1} d_i^2}
+$$
+
+per poter avere un preciso confronto con i valori ottenuti 
+
+#### LSTM large 
+Per quanto riguarda questo tipo di rete abbiamo dovuto modificare abbondantemente il codice. Innanzitutto presentiamo la specifica configurazione utilizzata per ottenere i risultati esposti in precedenza per la rete **LSTM small**:
+
+- Optimizer: Adam
+- Initial learning rate: 0.1 (Quello consigliato sarebbe 0.01)
+- Nessun LR scheduler
+- Batch size: 256
+- $\alpha$ = 0.2 
+
+NB: Ricordiamo che $\alpha$ è un coefficiente specifico per la funzione di loss che stiamo adottando, la $QUAD - QUAD$. 
+
+Per quanto riguarda l'addestramento della rete **LSTM Large** abbiamo invece: 
+
+- Optimizer: Adam
+- Initial learning rate: 0.01
+- LR Scheduler il quale divide per 10 il learning rate ogni 30 epoche
+- Batch size: 256
+- $\alpha$ = 0.4
+
+Un **learning rate scheduler** in TensorFlow è una tecnica utilizzata per regolare automaticamente il tasso di apprendimento (learning rate) durante il processo di addestramento di una rete neurale. Il tasso di apprendimento è un parametro critico nella fase di ottimizzazione dei modelli di machine learning, poiché influenza quanto velocemente il modello impara dai dati di addestramento.
+Nel nostro caso, avendo un elevato numero di epoche (100 per la LSTM large) il pericolo è quello dell'overfitting, modificare dinamicamente il learning rate diminuendolo ogni 30 epoche (in questo caso) ci permette di diminuire questo rischio. 
+
+In particolare il nostro è fatto nella seguente maniera:
+
+~~~ Python
+def scheduler(epoch, lr):
+    if epoch < 30:
+        return lr
+    elif epoch >= 30 and epoch < 60 :
+        return 0.001
+    elif epoch >= 60 and epoch < 90: 
+        return 0.0001
+    elif epoch >= 90: 
+        return 0.00001
+    else: 
+        return 0.01; 
+    
+
+lr_scheduler = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose = 1)
+~~~
+
+I risultati ottenuti da questa rete sono stati: 
+- loss: 127.6987 
+- custom_score: 625.6381 
+- val_loss: 125.9037 
+- val_custom_score: 564.4070 
+- lr: 1.0000e-05
+
+In questo caso possiamo fare già dei paragoni con il lavoro svolto all'interno del paper poiché siamo riusciti a sistemare anche il funzionamento della funzione di S-score, la quale è stata implementata direttamente in fase di addestramento e mostra il suo risultato sotto il nome di *custom_score*. 
+In particolare il *val_custom_score* non si discosta di molto rispetto a quello proposto dagli autori del paper che stiamo riproducendo, il quale si attesta sul valore di 446.89 per la variante non ottimizzata, come la nostra. 
+
+Prossimi passi: 
+
+Ottenere una versione definitiva della LSTM_small riaddestrando come fatto per LSTM_large. 
