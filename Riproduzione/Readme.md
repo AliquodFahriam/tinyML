@@ -387,7 +387,7 @@ Il modello small LSTM a, seguito delle modifiche apportate al codice di preparaz
 functions for deep learning early predictions of remaining useful life in
 aerospace gas turbine engines</a> in cui il valore della funzione di loss perquesto stesso tipo di rete era pari a 1647.3.
 
-Attenzione però, i dati di cui siamo in possesso al momento riguardano esclusivamente la fase di training e validation, non di testing. 
+Attenzione però, i risulati ottenuti al momento riguardano esclusivamente la fase di training e validation, non di testing. 
 Tuttavia il valore della funzione di loss in fase di validazione può essere un buon metro per comprendere se la rete ha generalizzato in maniera corretta o meno e, in questo caso il valore della Loss in fase di validazione è di 146.14 per la nostra LSTM_small.
 
 Adesso andranno condotti test utilizzando RMSE e l'S score come definiti pocanzi, ovvero: 
