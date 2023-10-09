@@ -10,7 +10,7 @@ I data sets consistono di diverse serie temporali multivariate, ogni data set è
 
 All'inizio di ogni serie temporale il motore opera normalmente e sviluppa un problema a un certo punto durante la serie. All'interno del *training set* il problema cresce fino a rendere il sistema inutilizzabile; nel *test set* la serie temporale si conclude prima che il sistema vada in stato di *failure*. 
 
-L'obiettivo è quello di predirre il numero di cicli operazionali rimanenti prima che avvenga un fallimento per quanto riguarda i dati presenti nel test set. Per verificare l'inferenza della rete all'interno della cartella del dataset sono presenti i file *RUL_FD0001-4.txt* i quali contengono i valori della RUL per ogni unità operativa (per ogni motore)
+L'obiettivo è quello di predirre il numero di cicli operazionali rimanenti prima che avvenga un fallimento per quanto riguarda i dati presenti nel test set. Per verificare l'inferenza della rete all'interno della cartella del dataset sono presenti i file *RUL_FD001-4.txt* i quali contengono i valori della RUL per ogni unità operativa (per ogni motore)
 
 Ogni file del dataset è un file di testo composto da 26 colonne di numeri separate da spazi. Ogni riga rappresenta lo snapshot dei dati raccolti durante un singolo ciclo operazionale, ogni colonna è una differente variabile. 
 
@@ -74,7 +74,7 @@ Le colonne corrispondono a
 
 ### Caricamento dei dati e prima elaborazione (1-4)
 
-Il caricamento dei dati in memoria viene effettuato utilizzando le librerie *Pandas* e *NumPy*, i dati vengono caricati in 4 dataframe i quali corrispondono ai vari FD0001-4.txt che si trovano all'interno del dataset. 
+Il caricamento dei dati in memoria viene effettuato utilizzando le librerie *Pandas* e *NumPy*, i dati vengono caricati in 4 dataframe i quali corrispondono ai vari FD001-4.txt che si trovano all'interno del dataset. 
 Essi vengono tenuti separati per semplicità di confronto con il paper di cui sopra. 
 <figure>
 <img src='../DrawIO/Diagramma senza titolo.drawio.png' id='train'> 
@@ -92,18 +92,18 @@ have constant values, hence we can remove them. Therefore,
 
 **Tuttavia** come appreso tramite l'analisi dei dati all'interno del training set ciò non è vero per ogni parte componente il dataset. 
 
-È invece vero per quanto riguarda **FD0001 e FD0003**. La causa è probabilmente da ricercarsi in quanto detto pocanzi per quanto riguarda le condizioni di volo registrate dai sensori, si ricorda infatti che FD0001 e FD0003 rappresentano voli in condizioni **costanti** mentre FD0002 e FD0004 ne rappresentano altri in condizioni **miste**. 
+È invece vero per quanto riguarda **FD001 e FD003**. La causa è probabilmente da ricercarsi in quanto detto pocanzi per quanto riguarda le condizioni di volo registrate dai sensori, si ricorda infatti che FD001 e FD003 rappresentano voli in condizioni **costanti** mentre FD002 e FD004 ne rappresentano altri in condizioni **miste**. 
 
-Riportiamo i grafici che rappresentano i valori dei sensori rispettivamente in FD0001 e FD0002:
+Riportiamo i grafici che rappresentano i valori dei sensori rispettivamente in FD001 e FD002:
 
 <figure>
 <img src='../DrawIO/FD0001_sensors.png'>
-<figcaption align='center'><i>Sensori FD0001</i></figcaption>
+<figcaption align='center'><i>Sensori FD001</i></figcaption>
 </figure>
 
 <figure>
 <img src='../DrawIO/FD0002_sensors.png'>
-<figcaption align = 'center'><i>Sensori FD0002</i></figcaption>
+<figcaption align = 'center'><i>Sensori FD002</i></figcaption>
 </figure>
 
 Gli autori del paper hanno preso la decisione di eliminarli da ogni componente del dataset. La *ratio* che li ha portati a questa decisione non si evince dal documento, tuttavia si potrebbe ipotizzare che i valori di quei sensori siano costanti per ogni condizione e che quindi rappresentino una *"sommatoria di tratti costanti a seconda della condizione di volo"*, ma questa rimane comunque soltanto un'ipotesi. 
@@ -125,12 +125,12 @@ Per sicurezza abbiamo verificato che la distribuzione dei dati non fosse cambiat
 
 <figure>
 <img src='../DrawIO/sensor_density_default.png'>
-<figcaption align='center'><i>Distribuzione FD0001 pre-scaling</i></figcaption>
+<figcaption align='center'><i>Distribuzione FD001 pre-scaling</i></figcaption>
 </figure>
 
 <figure>
 <img src='../DrawIO/sensor_density_scaled.png'>
-<figcaption align='center'><i>Distribuzione FD0001 post-scaling</i></figcaption>
+<figcaption align='center'><i>Distribuzione FD001 post-scaling</i></figcaption>
 </figure>
 
 NB:*Tutti i grafici sono stati realizzati tramite le librerie Seaborn e Matplotlib di Python*
@@ -226,19 +226,19 @@ I modelli sono stati sviluppati utilizzando la libreria *Tensorflow* di python e
 
 Abbiamo deciso inizialmente di addestrare i modelli su tutti i dati disponibili contemporaneamente tuttavia dal paper che stiamo cercando di riprodurre sembra che l'addestramento dei modelli sia stato reiterato per ognuna delle componenti del dataset in maniera separata. 
 
-Ovvero ad esempio la rete LSTM *"piccola"* è stata addestrata prima sui dati di FD0001, poi su quelli di FD0002 e così via... 
+Ovvero ad esempio la rete LSTM *"piccola"* è stata addestrata prima sui dati di FD001, poi su quelli di FD002 e così via... 
 
 Ciò a primo impatto è sembrato strano e si è tentato un approccio che cercasse di fare in modo che tutti i dati contemporaneamente fossero utilizzabili per l'addestramento, tuttavia ciò non ha portato a risultati soddisfacenti, di conseguenza proveremo a creare reti addestrate specificamemnte sulle varie componenti del datast. 
 
 ### Proposte per il miglioramento 
 
 Una proposta per il miglioramento di questo tipo di condizione potrebbe essere quella di dividere il dataset in due parti, da un lato avremmo le due componenti a condizioni costanti, ovvero: 
-- FD0001 
-- FD0003
+- FD001 
+- FD003
 
 mentre dall'altra avremmo le due componenti in condizioni miste: 
-- FD0002
-- FD0004
+- FD002
+- FD004
 
 A questo punto addestrare su questi due gruppi di dati due reti separate e, in seguito creare un'ultima rete (un **classificatore**), il quale dovrebbe avere lo scopo di indirizzare i dati verso la rete che è più adatta a calcolare la RUL. 
 Questa idea tuttavia presenta dei problemi di fondo che riguardano l'input delle reti di tipo LSTM. 
@@ -292,7 +292,7 @@ In particolare, la funzione di cui sopra è definita come *Quadratic-Quadratic*(
 
 ### Aggiornamenti 20/09/23
 
-A seguito dell'addestramento delle due reti LSTM che abbiamo descritto in precedenza per quanto riguarda la componente FD0001 del datast abbiamo ottenuto i seguenti risultati per quanto riguarda la funzione di loss: 
+A seguito dell'addestramento delle due reti LSTM che abbiamo descritto in precedenza per quanto riguarda la componente FD001 del datast abbiamo ottenuto i seguenti risultati per quanto riguarda la funzione di loss: 
 - Small LSTM: 2912.22192
 - Large LSTM: 6115.06201
 
@@ -457,3 +457,152 @@ In particolare il *val_custom_score* non si discosta di molto rispetto a quello 
 Prossimi passi: 
 
 Ottenere una versione definitiva della LSTM_small riaddestrando come fatto per LSTM_large. 
+
+### Aggiornamenti 9/10/23
+
+Sono stati aggiunti grafici che mostrano l'andamento dell'S-Score e della funzione di loss sia in fase di training che di validation all'interno del file <a href='Riproduzione_PW/riproduzione_pw_small.ipynb'>riproduzione_pw_small</a> e <a href='Riproduzione_PW/riproduzione_pw_large.ipynb'>riproduzione_pw_large</a>
+
+Ciò che avviene in maniera interessante è che da un certo punto in poi è visibile come il valore dell'S-Score in fase di validazione sia solitamente sempre minore dell'S-Score in fase di Training, ciò è probabilmente dovuto al fatto che la rete tende (per i dati mai visti) ad avere un comportamento maggiormente conservativo quindi a *sbagliare con previsioni in anticipo piuttosto che in ritardo*. 
+
+Come è possibile infatti evincere dai grafici, per quanto riguarda la rete LSTM Large abbiamo che dall'epoca 25 circa il valore dell'S-Score in fase di validazione è costantemente minore del corrispettivo in fase di training. 
+
+<figure>
+<img src ='../DrawIO/S_score_large.png'>
+<figcaption align='center'>Andamento dell'S-Score in fase di training e di validation per l'addestramento della LSTM Large su FD001</figcaption>
+</figure>
+
+
+Lo stesso avviene per la rete LSTM small 
+
+
+<figure>
+<img src ='../DrawIO/S_score_small.png'>
+<figcaption align='center'>Andamento dell'S-Score in fase di training e di validation per l'addestramento della LSTM small su FD001</figcaption>
+</figure>
+
+Per quanto riguarda, invece l'andamento della funzione di loss non c'è molto da sengalare, tuttavia il suo valore sembra assestarsi abbastanza presto, il che, avendo un elevato numero di epoche in fase di addestramento, potrebbe portare ad overfitting
+
+<figure>
+<img src ='../DrawIO/loss_large_resized.png'>
+<figcaption align='center'>Andamento della funzione di loss in fase di training e di validation per l'addestramento della LSTM Large su FD001</figcaption>
+</figure>
+
+<figure>
+<img src ='../DrawIO/loss_small_resized.png'>
+<figcaption align='center'>Andamento della funzione di loss in fase di training e di validation per l'addestramento della LSTM Small su FD001</figcaption>
+</figure>
+
+### AI su NUCLEO 
+
+Ora che abbiamo disponibilità di due modelli con prestazioni comparabili con quelle ottenute da chi ha steso il documento che stiamo cercando di riprodurre possiamo provare a fare il deploy su microcontrollore, al momento siamo a conoscenza di 3 tecniche per fare ciò:
+
+1. **Utilizzare l'IDE fornito da STM con il suo pacchetto XCUBE-AI** 
+2. **Utilizzare Tensorflow come libreria per poter fare il deploy del modello su MCU** 
+3. **Sfruttare il sistema operativo MbedOS che si trova all'interno dell´MCU**
+
+*NB: l'MCU su cui stiamo lavorando è una NUCLEO-F446RE*
+
+Abbiamo provato a cominciare con il primo metodo tuttavia cercando di caricare il modello tramite XCUBE-AI otteniamo il seguente errore: 
+
+*[NOT IMPLEMENTED: Unsupported layer types: FlexTensorListStack, FlexTensorListReserve, WHILE, stopping.]*
+
+Dopo qualche ricerca si è compreso come ciò derivi dalla struttura che viene data alla rete a seguito della conversione in formato *.tflite*, ovvero la seguente: 
+
+<figure>
+<img src ='../DrawIO/large_lstm_not_fixed'>
+<figcaption align='center'>Grafico della rete convertita in tflite</figcaption>
+</figure>
+
+In questo caso la rete è stata convertita utilizzando il seguente codice: 
+~~~ Python
+converter2 = tf.lite.TFLiteConverter.from_keras_model(large_lstm)
+converter2.target_spec.supported_ops = [
+  tf.lite.OpsSet.TFLITE_BUILTINS, # enable TensorFlow Lite ops.
+  tf.lite.OpsSet.SELECT_TF_OPS # enable TensorFlow ops.
+]
+lstm_large = converter2.convert()
+with open("large_lstm.tflite", "wb") as f:
+    f.write(lstm_small_tflite)
+~~~
+
+tuttavia, modificandolo nel seguente modo e utilizzandolo *direttamente* (senza caricare il modello in memoria dall'esterno ma nello stesso notebook in cui avviene l'addestramento) otteniamo:
+~~~ Python
+MODEL_DIR = '/home/aliquodfahriam/tinyML/Riproduzione/Riproduzione_PW/models/LSTMlarge/FD0001'
+run_model = tf.function(lambda x: LSTMlargeModel(x))
+BATCH_SIZE = 256
+STEPS = 30
+INPUT_SIZE = 14
+
+concrete_func = run_model.get_concrete_function(
+    tf.TensorSpec([BATCH_SIZE, STEPS, INPUT_SIZE], LSTMlargeModel.inputs[0].dtype)
+)
+converter = tf.lite.TFLiteConverter.from_keras_model(LSTMlargeModel)
+converter.target_spec.supported_ops = [
+  tf.lite.OpsSet.TFLITE_BUILTINS, # enable TensorFlow Lite ops.
+  tf.lite.OpsSet.SELECT_TF_OPS # enable TensorFlow ops.
+]
+
+
+LSTMlargeModel.save(MODEL_DIR, save_format="tf", signatures = concrete_func )
+
+converter = tf.lite.TFLiteConverter.from_saved_model(MODEL_DIR)
+tflite_model = converter.convert()
+
+with open("large_lstm.tflite", "wb") as f:
+    f.write(tflite_model)
+~~~
+
+Con cui abbiamo ottenuto una rete che può fare a meno dei layers *FlexTensorListStack* e *FlexTensorListReserve* che erano stati creati in fase di conversione. 
+
+
+<figure>
+<img src ='../DrawIO/large_lstm_netron_fixed'>
+<figcaption align='center'>Grafico della rete convertita in tflite in maniera corretta</figcaption>
+</figure>
+
+di cui deve ancora essere testata l'effettiva funzionalità in combinazione con XCUBE-AI. X-CUBE-AI è un Pacchetto di Espansione STM32Cube, che fa parte dell'ecosistema STM32Cube.AI. Estende le capacità di STM32CubeMX con la conversione automatica di algoritmi di intelligenza artificiale preaddestrati, inclusi modelli di reti neurali e di apprendimento automatico classico. Integra anche una libreria ottimizzata generata nel progetto dell'utente.
+Il modo più semplice per utilizzare X-CUBE-AI è scaricarlo all'interno del tool STM32CubeMX (versione 5.4.0 o successiva), come descritto nel manuale dell'utente "Introduzione al Pacchetto di Espansione X-CUBE-AI per l'intelligenza artificiale (AI)" (UM2526).
+
+Il Pacchetto di Espansione X-CUBE-AI offre anche diversi modi per convalidare gli algoritmi di intelligenza artificiale sia su un PC desktop che su un STM32. Con X-CUBE-AI, è anche possibile misurare le prestazioni sui dispositivi STM32 senza alcun codice C specifico creato dall'utente.
+#### XCUBE-AI
+X-CUBE-AI è un Pacchetto di Espansione STM32Cube, che fa parte dell'ecosistema STM32Cube.AI. Estende le capacità di STM32CubeMX con la conversione automatica di algoritmi di intelligenza artificiale preaddestrati, inclusi modelli di reti neurali e di apprendimento automatico classico. Integra anche una libreria ottimizzata generata nel progetto dell'utente.
+Il modo più semplice per utilizzare X-CUBE-AI è scaricarlo all'interno del tool STM32CubeMX (versione 5.4.0 o successiva), come descritto nel manuale dell'utente "Introduzione al Pacchetto di Espansione X-CUBE-AI per l'intelligenza artificiale (AI)" (UM2526).
+
+
+Il Pacchetto di Espansione X-CUBE-AI offre anche diversi modi per convalidare gli algoritmi di intelligenza artificiale sia su un PC desktop che su un STM32. Con X-CUBE-AI, è anche possibile misurare le prestazioni sui dispositivi STM32 senza alcun codice C specifico creato dall'utente.
+
+Differenze con il secondo e il terzo metodo: 
+- XCUBE-AI è un progetto closed Source a differenza di Tensorflow
+- Potrebbe essere la maniera più semplice di gestire la rete dato che non richiede di imbastire un progetto tensorflow né di utilizzare le sue specifiche librerie
+- A quanto sembra dai risultati online è il metodo più efficiente e ottimizzato per funzionare con questo tipo di MCU. 
+- Non bisogna per forza usare C++
+
+#### Tensorflow on Board
+In realtà i successivi due metodi sono parenti, per non dire identici. Nel primo caso bisogna cercare di utilizzare l'ide fornito da STM per imbastire un progetto tensorflow e utilizzare i file che vengono messi a disposizione in uno dei loro template come libreria per poter poi gestire i dati in input alla rete che deve a sua volta essere convertita da file *.tflite* a file *.h* da utilizzare tramite *include* di C 
+
+Nel secondo caso vengono sfruttate le features fornite dalla board in quanto provvista di sistema operativo mbedOS e, tuttavia, anche in questo caso avremo bisogno di utilizzare un template di tensorflowLite e di modificarlo per adattarlo alle nostre esigenze. 
+
+
+
+Abbiamo continuato il nostro approccio al primo punto ottenendo i seguenti risultati:
+
+1. **NOT IMPLEMENTED: Batch size greater than 1 not implemented**
+
+Siamo riusciti a risolvere questo problema semplicemente cambiando il runtime, il quale può essere settato su due impostazioni: 
+- TFLite Micro Runtime
+- STM32CubeAI.Runtime
+
+Inizialmente abbiamo provato col secondo ottenendo l'errore di cui sopra, mentre con il primo riusciamo a portare a termine il processo di analisi, tuttavia otteniamo il seguente errore abbastanza autoesplicativo: 
+<figure>
+<img src = '../DrawIO/too_much_ram.png'></img>
+<figcaption align = 'center'>Il processo di analisi viene completato ma il modello viene indicato come troppo grande (e di molto) </figcaption>
+</figure>
+
+NB: Nel caso in cui il processo di analisi non venga completato al posto della spunta verde (nel bottone della scritta analyze) avremmo una X rossa.
+
+<figure>
+<img src = '../DrawIO/batch_size_1.png'></img>
+<figcaption align = 'center'>Fallimento dell'analisi, in basso l'output che lo conferma </figcaption>
+</figure>
+
+Tuttavia il risultato a cui siamo pervenuti va contro i risultati del paper che stiamo cercando di riprodurre i quali affermano che nella sua variante non ottimizzata il modello LSTM small occuperebbe soltanto 13KB di RAM e 224 KB di flash. 
