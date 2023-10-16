@@ -606,3 +606,18 @@ NB: Nel caso in cui il processo di analisi non venga completato al posto della s
 </figure>
 
 Tuttavia il risultato a cui siamo pervenuti va contro i risultati del paper che stiamo cercando di riprodurre i quali affermano che nella sua variante non ottimizzata il modello LSTM small occuperebbe soltanto 13KB di RAM e 224 KB di flash. 
+
+### Aggiornamenti 16/10/2023
+
+Considerando il codice che abbiamo presentato precedentemente per quanto riguarda il processo di conversione è assolutamente plausibile che non sia possibile allocare lo spazio necessario all'interno dell'MCU per il batch di input. 
+
+La rete che abbiamo cercato di validare tramite gli strumenti forniti da *STM32CubeIDE* ha infatti una dimensione dell'input pari a 256x30x14, ovvero 256 minibatch da 30 elementi ciascuno, di cui ogni elemento è a sua volta composto da ben 14 features (ovvero le colonne che abbiamo selezionato dal dataset).
+
+Modificando il parametro di batch size ad 1 la dimensione dell'input arriva a 1x256x14 ovvero un singolo minibatch da 30 elementi, ciascuno con 14 features. 
+
+Questa modifica si è rivelata essere vincente portandoci ad avere i seguenti valori: 
+- 240,87 KB di memoria Flash occupata
+- **14,59 KB di memoria RAM occupata**
+
+Abbiamo in questo modo dimezzato l'occupazione di memoria flash. Tuttavia il dato più interessante risulta essere quello dell'occupazione della RAM, la quale adesso è davvero vicina ai dati forniti dall'articolo di cui stiamo seguendo i passi. 
+
