@@ -621,3 +621,187 @@ Questa modifica si è rivelata essere vincente portandoci ad avere i seguenti va
 
 Abbiamo in questo modo dimezzato l'occupazione di memoria flash. Tuttavia il dato più interessante risulta essere quello dell'occupazione della RAM, la quale adesso è davvero vicina ai dati forniti dall'articolo di cui stiamo seguendo i passi. 
 
+### Aggiornamenti 19/10/2023
+
+A seguito di alcuni problemi dovuti all'aggiornamento del kernel sul sistema operativo siamo stati costretti a cambiare pc per qualche giorno. Ci teniamo a precisare che, nonostante la configurazione software sia esattamente la stessa, le performance delle reti neurali che riusciamo ad addestrare risultano di gran lunga diverse. 
+Le configurazione dei due PC sono: 
+
+**Portatile (Migliori risultati)** *Asus Zephyrus g14*: 
+- Ryzen 7 4800HS 
+- RTX 2060 MAX-Q 6GB 
+- 1 TB SSD
+- 32 GB RAM 
+
+**PC Fisso**: 
+- Ryzen 5 1600AF
+- GTX 1080 8GB 
+- 16 GB RAM 
+- 1 TB + 500 GB + 120 GB SSD
+- 500 GB HDD
+
+Per quanto riguarda la configurazione software abbiamo seguito le medesime regole, le quali sono riassunte all'interno di <a href=''>questa guida di tensorflow</a>, in particolare abbiamo 
+
+- Versione Driver NVIDIA per Linux: 535.113.01 
+- Versione CUDA: 12.2
+- Versione CUDA Toolkit: 12.2.2 
+- Versione CUDNN: 8.9.5 (for CUDA 12)
+
+*La versione di CUDA Toolkit è legata a doppio filo con la versione di CUDA che troviamo all'interno dei driver NVIDIA, nel caso la corrispondenza non fosse rispettata ci potrebbero essere problemi per quanto riguarda il caricamento stesso dei driver*. 
+
+Di seguito lasciamo anche il resoconto dell'ambiente Python utilizzato in entrambi i casi per procedere con lo sviluppo: 
+name: tf
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - _openmp_mutex=5.1=1_gnu
+  - asttokens=2.4.0=pyhd8ed1ab_0
+  - backcall=0.2.0=pyh9f0ad1d_0
+  - backports=1.0=pyhd8ed1ab_3
+  - backports.functools_lru_cache=1.6.5=pyhd8ed1ab_0
+  - bzip2=1.0.8=h7b6447c_0
+  - ca-certificates=2023.7.22=hbcca054_0
+  - comm=0.1.4=pyhd8ed1ab_0
+  - debugpy=1.6.7=py310h6a678d5_0
+  - decorator=5.1.1=pyhd8ed1ab_0
+  - entrypoints=0.4=pyhd8ed1ab_0
+  - exceptiongroup=1.1.3=pyhd8ed1ab_0
+  - executing=1.2.0=pyhd8ed1ab_0
+  - ipykernel=6.25.2=pyh2140261_0
+  - ipython=8.16.1=pyh0d859eb_0
+  - jedi=0.19.1=pyhd8ed1ab_0
+  - jupyter_client=7.3.4=pyhd8ed1ab_0
+  - jupyter_core=5.4.0=py310hff52083_0
+  - ld_impl_linux-64=2.38=h1181459_1
+  - libffi=3.4.4=h6a678d5_0
+  - libgcc-ng=11.2.0=h1234567_1
+  - libgomp=11.2.0=h1234567_1
+  - libsodium=1.0.18=h36c2ea0_1
+  - libstdcxx-ng=11.2.0=h1234567_1
+  - libuuid=1.41.5=h5eee18b_0
+  - matplotlib-inline=0.1.6=pyhd8ed1ab_0
+  - ncurses=6.4=h6a678d5_0
+  - nest-asyncio=1.5.8=pyhd8ed1ab_0
+  - openssl=3.0.11=h7f8727e_2
+  - packaging=23.2=pyhd8ed1ab_0
+  - parso=0.8.3=pyhd8ed1ab_0
+  - pexpect=4.8.0=pyh1a96a4e_2
+  - pickleshare=0.7.5=py_1003
+  - pip=23.3=py310h06a4308_0
+  - platformdirs=3.11.0=pyhd8ed1ab_0
+  - prompt-toolkit=3.0.39=pyha770c72_0
+  - prompt_toolkit=3.0.39=hd8ed1ab_0
+  - psutil=5.9.0=py310h5eee18b_0
+  - ptyprocess=0.7.0=pyhd3deb0d_0
+  - pure_eval=0.2.2=pyhd8ed1ab_0
+  - pygments=2.16.1=pyhd8ed1ab_0
+  - python=3.10.13=h955ad1f_0
+  - python-dateutil=2.8.2=pyhd8ed1ab_0
+  - python_abi=3.10=2_cp310
+  - pyzmq=25.1.0=py310h6a678d5_0
+  - readline=8.2=h5eee18b_0
+  - setuptools=68.0.0=py310h06a4308_0
+  - six=1.16.0=pyh6c4a22f_0
+  - sqlite=3.41.2=h5eee18b_0
+  - stack_data=0.6.2=pyhd8ed1ab_0
+  - tk=8.6.12=h1ccaba5_0
+  - tornado=6.1=py310h5764c6d_3
+  - traitlets=5.11.2=pyhd8ed1ab_0
+  - typing-extensions=4.8.0=hd8ed1ab_0
+  - typing_extensions=4.8.0=pyha770c72_0
+  - wcwidth=0.2.8=pyhd8ed1ab_0
+  - wheel=0.41.2=py310h06a4308_0
+  - xz=5.4.2=h5eee18b_0
+  - zeromq=4.3.4=h2531618_0
+  - zlib=1.2.13=h5eee18b_0
+  - pip:
+      - absl-py==2.0.0
+      - astunparse==1.6.3
+      - cachetools==5.3.1
+      - certifi==2023.7.22
+      - charset-normalizer==3.3.0
+      - contourpy==1.1.1
+      - cycler==0.12.1
+      - flatbuffers==23.5.26
+      - fonttools==4.43.1
+      - gast==0.5.4
+      - google-auth==2.23.3
+      - google-auth-oauthlib==1.0.0
+      - google-pasta==0.2.0
+      - grpcio==1.59.0
+      - h5py==3.10.0
+      - idna==3.4
+      - joblib==1.3.2
+      - keras==2.14.0
+      - kiwisolver==1.4.5
+      - libclang==16.0.6
+      - markdown==3.5
+      - markupsafe==2.1.3
+      - matplotlib==3.8.0
+      - ml-dtypes==0.2.0
+      - numpy==1.26.1
+      - **nvidia-cublas-cu11==11.11.3.6**
+      - **nvidia-cuda-cupti-cu11==11.8.87**
+      - **nvidia-cuda-nvcc-cu11==11.8.89**
+      - **nvidia-cuda-runtime-cu11==11.8.89**
+      - **nvidia-cudnn-cu11==8.7.0.84**
+      - **nvidia-cufft-cu11==10.9.0.58**
+      - **nvidia-curand-cu11==10.3.0.86**
+      - **nvidia-cusolver-cu11==11.4.1.48**
+      - **nvidia-cusparse-cu11==11.7.5.86**
+      - **nvidia-nccl-cu11==2.16.5**
+      - oauthlib==3.2.2
+      - opt-einsum==3.3.0
+      - pandas==2.1.1
+      - pillow==10.1.0
+      - protobuf==4.24.4
+      - pyasn1==0.5.0
+      - pyasn1-modules==0.3.0
+      - pyparsing==3.1.1
+      - pytz==2023.3.post1
+      - requests==2.31.0
+      - requests-oauthlib==1.3.1
+      - rsa==4.9
+      - scikit-learn==1.3.1
+      - scipy==1.11.3
+      - sklearn-model==0.0.6
+      - tensorboard==2.14.1
+      - tensorboard-data-server==0.7.1
+      - **tensorflow==2.14.0**
+      - tensorflow-estimator==2.14.0
+      - tensorflow-io-gcs-filesystem==0.34.0
+      - tensorrt==8.5.3.1
+      - termcolor==2.3.0
+      - threadpoolctl==3.2.0
+      - tzdata==2023.3
+      - urllib3==2.0.7
+      - werkzeug==3.0.0
+      - wrapt==1.14.1
+
+Per quanto la scheda grafica RTX 2060 sia effettivamente più recente rispetto alla GTX 1080 la seconda ha un TDP di 180 watt mentre la prima di soli 65, ciò è ovviamente in relazioni alle dimensioni e ai consumi che un portatile può riuscire a raggiungere. 
+Ciò che ci saremmo aspettati è tuttavia un semplice incremento di prestazioni in fase di addestramento (una scheda grafica più potente può riuscire a farci addestrare una rete in meno tempo), tuttavia in questo caso otteniamo anche un miglioramento delle prestazioni della rete senza alcun tipo di modifica. 
+
+In particolare, nel caso del PC fisso abbiamo (per la rete LSTM small) una funzione di loss che rimane intorno a 1400 e un S-Score che rimane intorno ai 20000
+
+Anche provando a cambiare ambiente usando *Tensorman* (ovvero un container docker il quale contiene tutto il necessario per l'utilizzo standalone di tensorflow + GPU) i risultati non migliorano, anzi peggiorano di molto portando la funzione di loss ad avere valori oltre i 4000. 
+
+Comprendere a cosa sia dovuta questa disparità nei risultati non è immediato, tuttavia possiamo fare delle ipotesi. La RTX 2060 montata sul portatile ha 240 tensor cores, i quali sono specializzati nella computazione per questo tipo di task mentre la GTX 1080 non ne ha alcuno. Questa potrebbe essere la causa tuttavia non si trovano in letteratura casi del genere e considerazioni a riguardo. 
+
+#### X-CUBE-AI problemi di validazione su target
+
+Per quanto la validazione su desktop vada a buon fine, stiamo riscontrando problemi con la validazione su microcontrollore della nostra rete neurale che adesso si presenta come segue: 
+<figure>
+<img src='../DrawIO/small_lstm_fixed_batch_1.png'>
+<figcaption align='center'>Notare come la dimensione dell'input è passata da 256x30x14 a 1x30x14</figcaption>
+</figure>
+
+Come già accennato la validazione della rete su desktop ci porta ad ottenere un risultato affermativo con un tempo di inferenza di 0.632 millisecondi. 
+
+Tuttavia la validazione della rete sulla MCU ritorna un errore: 
+*E200(ValidationError): stm32: Unable to bind the STM AI runtime with "lstm_small" c-model: [] 
+ connection to "serial:115200"/"115200" run-time fail*
+
+*E801(HwIOError): Invalid firmware - /dev/ttyACM0:115200*
+
+
