@@ -809,8 +809,10 @@ Tuttavia la validazione della rete sulla MCU ritorna un errore:
 La cosa più interessante da fare potrebbe essere quella di provare uno degli esempi di tensorflow e controllare se il problema sta nella nostra rete o è qualcosa che ha effettivamente a che fare con la MCU. 
 Procederemo utilizzando l'esempio giocattolo. 
 
-I file dell'esempio che stiamo cercando di utilizzare possono esssere trovati all'interno della cartella Experimental, in particolare parliamo di *sine_wave.ipynb*, *sine_model.tflite* e sine_model.h
+I file dell'esempio che stiamo cercando di utilizzare possono esssere trovati all'interno della cartella Experimental, in particolare parliamo di *sine_wave.ipynb*, *sine_model.tflite* e 
+sine_model.h
 
+Abbiamo effettuato la prova anche con questo esempio senza successo, il lato positivo è che non si tratta di un problema della nostra rete, dunque. Il lato negativo è che la soluzione al problema rimane ignota. 
 
 
 
