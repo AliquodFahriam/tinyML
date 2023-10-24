@@ -804,4 +804,13 @@ Tuttavia la validazione della rete sulla MCU ritorna un errore:
 
 *E801(HwIOError): Invalid firmware - /dev/ttyACM0:115200*
 
+### Aggiornamento 24/10/23
+
+La cosa più interessante da fare potrebbe essere quella di provare uno degli esempi di tensorflow e controllare se il problema sta nella nostra rete o è qualcosa che ha effettivamente a che fare con la MCU. 
+Procederemo utilizzando l'esempio giocattolo. 
+
+I file dell'esempio che stiamo cercando di utilizzare possono esssere trovati all'interno della cartella Experimental, in particolare parliamo di *sine_wave.ipynb*, *sine_model.tflite* e sine_model.h
+
+
+
 
