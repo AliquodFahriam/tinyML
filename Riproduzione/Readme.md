@@ -814,5 +814,22 @@ sine_model.h
 
 Abbiamo effettuato la prova anche con questo esempio senza successo, il lato positivo è che non si tratta di un problema della nostra rete, dunque. Il lato negativo è che la soluzione al problema rimane ignota. 
 
+### Aggiornamento 25/10/23
+
+Spulciando <a href='./X_CUBE_AI/en.DM00570145.pdf'> la documentazione di X-CUBE-AI</a> abbiamo trovato quanto segue: 
+*The [Validate on target] option must be used only later when the targeted device is flashed with special
+test application “AI Validation”. It must be selected during the previous step (step 3 of Section 4.1 Adding the X-
+CUBE-AI component). Reported information and usage are fully described in Section 10 AI validation application.*
+
+E ancora: 
+
+*"[Validation on target]: this mode compares the DL model with the C model that runs on the targeted
+device. It requires a special AI test application that embeds the generated NN libraries and the COM agent
+to communicate with the host system. Output and usage are illustrated in Section 10 AI validation
+application."*
+
+A differenza di quello che pensavamo, la validazione su target fa un confronto tra il modello in c (convertito automaticamente dal file .tflite ) e il modello che viene fornito dall'utente in questa particolare fase (che ovviamente deve essere lo stesso modello tflite fornito in precedenza). 
+
+Procediamo a questo punto da dove avevamo lasciato il lavoro andando a configurare il clock impostandolo a 180 MHz e salvando la configurazione ioc. A questo punto verrà automaticamente generato del codice aggiuntivo riguardante la parte che compete ad X-CUBE-AI. In particolare viene generata una directory che contiene quanto segue
 
 
