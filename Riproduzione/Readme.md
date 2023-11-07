@@ -830,6 +830,12 @@ application."*
 
 A differenza di quello che pensavamo, la validazione su target fa un confronto tra il modello in c (convertito automaticamente dal file .tflite ) e il modello che viene fornito dall'utente in questa particolare fase (che ovviamente deve essere lo stesso modello tflite fornito in precedenza). 
 
-Procediamo a questo punto da dove avevamo lasciato il lavoro andando a configurare il clock impostandolo a 180 MHz e salvando la configurazione ioc. A questo punto verrà automaticamente generato del codice aggiuntivo riguardante la parte che compete ad X-CUBE-AI. In particolare viene generata una directory che contiene quanto segue
+Procediamo a questo punto da dove avevamo lasciato il lavoro andando a configurare il clock impostandolo a 180 MHz e salvando la configurazione ioc. A questo punto verrà automaticamente generato del codice aggiuntivo riguardante la parte che compete ad X-CUBE-AI. In particolare viene generata una directory che contiene quanto segue: 
+
+<figure align='center'>
+<img src='../DrawIO/X_CUBE_AI_directory.png' >
+<figcaption align='center'>Contenuto della directory X-CUBE-AI generata automaticamente dall'IDE</figcaption>
+</figure>
 
 
+https://os.mbed.com/docs/mbed-os/v6.16/mbed-os-pelion/machine-learning-with-tensorflow-and-mbed-os.html
