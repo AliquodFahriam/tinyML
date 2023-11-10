@@ -839,3 +839,6 @@ Procediamo a questo punto da dove avevamo lasciato il lavoro andando a configura
 
 
 https://os.mbed.com/docs/mbed-os/v6.16/mbed-os-pelion/machine-learning-with-tensorflow-and-mbed-os.html
+
+
+<a href="https://github.com/makinarocks/awesome-industrial-machine-datasets/blob/master/data-explanation/C-MAPSS/README.md">Awesome dataset description</a>

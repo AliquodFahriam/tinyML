@@ -1,6 +1,4 @@
 /Aircraft Gearbox
-CMAPSS/
-CMAPSS/*
 /FEMTO
 /HealthyGearbox
 HealthyGearboxNoFeatures/
@@ -9,3 +7,4 @@ CMAPSS.txt
 cmapss.ipynb
 CMAPSS_FD001_LSTM_piecewise_linear_degradation_model.ipynb
 /STM32CubeMXProject
+/dallE
