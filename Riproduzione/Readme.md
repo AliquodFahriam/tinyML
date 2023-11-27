@@ -842,3 +842,34 @@ https://os.mbed.com/docs/mbed-os/v6.16/mbed-os-pelion/machine-learning-with-tens
 
 
 <a href="https://github.com/makinarocks/awesome-industrial-machine-datasets/blob/master/data-explanation/C-MAPSS/README.md">Awesome dataset description</a>
+
+### Aggiornamenti 27/11/2023
+
+A seguito di esperimenti effettuati sui dati di test ci siamo resi conto di come il modello che finora avevamo tentato di utilizzare fosse in gran parte affetto da overfitting, per tentare di risolvere il problema abbiamo riveduto e corretto la parte relativa alla preparazione dei dati. Quest'ultima è stata quindi determinante per la creazione del nuovo modello con cui siamo, invece, arrivati ad ottimi valori anche in fase di test. Riportiamo di seguito qualche immagine di confronto. 
+
+ <figure>
+<img src="..//DrawIO/small_overfitted.png">
+<figcaption align='center'> Overfitting della Small LSTM originale</figcaption>
+ </figure>
+
+ <figure>
+ <img src="../DrawIO/QUAD_small_test.png">
+ <figcaption align='center'>Test sulla nuova rete Small addestrata con QUAD-QUAD <figcaption>
+ </figure>
+Abbiamo anche deciso di cambiare la funzione di loss per comprendere quanto la QUAD-QUAD incidesse realmente sulle performance della rete neurale. In questo senso otteniamo il grafico di seguito
+ 
+ <figure>
+ <img src="../DrawIO/MSE_small_test.png">
+ <figcaption align='center'>Test sulla nuova rete Small addestrata con MSE <figcaption>
+ </figure>
+
+ Per quanto riguarda i risultati numerici dell'S-Score e dell'RMSE otteniamo i seguenti valori, confrontati con i risultati dello stato dell'arte. 
+ <figure>
+ <img src="../DrawIO/resultsTable.png">
+ <figcaption align='center'>Tabella dei risultati<figcaption>
+ </figure>
+
+ Come è possibile notare dalle figure, il risultato cambia in maniera drastica.
+ Per vedere tutti i grafici riferirsi al file <a href='../Riproduzione/Experimental/experiments_fixed.ipynb'>experiments_fixed.ipynb</a>
+
+ Seguirà adesso una fase di nuova analisi dello stato dell'arte che ci permetta di arricchire il progetto. 
