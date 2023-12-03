@@ -873,3 +873,43 @@ Abbiamo anche deciso di cambiare la funzione di loss per comprendere quanto la Q
  Per vedere tutti i grafici riferirsi al file <a href='../Riproduzione/Experimental/experiments_fixed.ipynb'>experiments_fixed.ipynb</a>
 
  Seguirà adesso una fase di nuova analisi dello stato dell'arte che ci permetta di arricchire il progetto. 
+ 
+ #### Aggiornamenti 02/12/2023
+
+Sono stati aggiunti due documenti all'interno della cartella apposita. 
+- <a href = 'Documenti/Appuntati/Primer For TinyML Predictive Maintenance/A_Primer_for_tinyML_Predictive_Maintenance_Input_and_Model_Optimisation.pdf'>Primer For TinyML Predictive Maintenance</a>
+- <a href = 'Documenti/Appuntati/RealTimePrediction/Real-time_Prediction_Method_of_Remaining_Useful_Life_Based_on_TinyML.pdf'>Real-time Prediction Method of Remaining Useful Life</a>
+
+Il primo fornisce una panoramica più generale sul problema e qualche spunto di riflessione interessante, il riassunto dei punti salienti può essere trovato <a href='Documenti/Appuntati/Primer For TinyML Predictive Maintenance/A primer for tinyML predictive Maintenance.md'>qui</a>. 
+
+Il secondo, invece, non ci fornisce informazioni interessanti dal punto di vista implementativo (come invece il titolo sembrerebbe suggerire). Presenta invece numerosi riferimenti ad altri lavori nell'ambito del TinyML che potrebbe essere interessante analizzare. 
+
+A questo punto grazie al contributo di <a href = 'Documenti/Appuntati/Primer For TinyML Predictive Maintenance/A_Primer_for_tinyML_Predictive_Maintenance_Input_and_Model_Optimisation.pdf'>Primer For TinyML Predictive Maintenance</a> mi sono convinto che potrebbe essere una buona idea effettuare il deployment della rete anche su RaspberryPi per due motivi fondamentali
+
+- Grazie al sistema operativo è un'operazione molto smeplice da effettuare 
+- I due principali chip per TinyML sono: 
+    - Cortex-M (NUCLEO)
+    - Cortex-A (Raspberry Pi)
+
+Potrebbe quindi essere utile un confronto tra le prestazioni dell'uno e dell'altro 
+Per non parlare poi del confronto tra tensorflow nativo e XCUBE-AI. 
+
+In particolare per il deploy sulla raspberry utilizzeremo comunque python come linguaggio di programmazione, tuttavia per effettuare l'inferenza non avremo bisogno dell'intera libreria di tensorflow ma soltanto l'interprete di Tensorflow Lite Micro, che può essere facilmente installato con 
+
+~~~ bash
+pip3 install --extra-index-url https://google-coral.github.io/py-repo tflite_runtime
+~~~
+
+ed importato tramite le seguenti righe di codice: 
+~~~ Python
+import tflite_runtime
+from tflite_runtime.interpreter import Interpreter 
+~~~
+
+Per comodità abbiamo salvato i dati nel formato in cui possono essere dati in pasto alla rete così da poterli caricare a piacimento. 
+
+I prossimi passi in questo senso sono: 
+- Valutare le prestazioni su raspberry effettuando l'inferenza con i dati caricati in locale 
+- Passare i dati dal PC alla raspberry (via USB o protocolli wireless) per fare inferenza online
+
+Il secondo punto avrà precedenza minore rispetto al deploymemnt su NUCLEO. 
