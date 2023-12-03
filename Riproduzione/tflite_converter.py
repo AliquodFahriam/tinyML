@@ -1,6 +1,6 @@
 
 import tensorflow as tf 
-def convert_to_tflite(MODEL_DIR, BATCH_SIZE, STEPS, INPUT_SIZE, nome_rete, modello, nome_modello): 
+def convert_to_tflite(MODEL_DIR, BATCH_SIZE, STEPS, INPUT_SIZE, modello, nome_modello): 
     run_model = tf.function(lambda x: modello(x))
     concrete_func = run_model.get_concrete_function(
         tf.TensorSpec([BATCH_SIZE, STEPS, INPUT_SIZE], modello.inputs[0].dtype)
