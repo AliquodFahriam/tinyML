@@ -960,8 +960,97 @@ Per quanto riguarda il calcolo del tempo di inferenza su NUCLEO siamo riusciti a
 
 Descriviamo di seguito il processo che ci ha portati a riuscire ad effettuare il deploy. 
 
-##### Deploy di AI su NUCLEO con XCUBE-AI
+##### Deploy di AI su NUCLEO con X-CUBE-AI
 1. Collegare NUCLEO al PC tramite un cavo USB-B -> USB-A
 2. Installare e aprire **STM32CubeMX** 
     - La procedura può essere portata a termine anche utilizzando soltanto STM32CubeIDE ma, nel momento in cui scrivo c'è un bug al momento della generazione del codice che non permette alla procedura di andare a buon fine
-3.
+3. Installare il pacchetto X-CUBE-AI dal gestore dei pacchetti situato nella sezione *help* del menu a tendina 
+4. Selezionare la board desiderata, nel nostro caso *NUCLEO-F446RE*, selezionare la scheda con un doppio click 
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step4.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+5. Verrà aperto un file *.ioc* da cui programmare il microcontrollore, dovremmo trovarci davanti una schermata come questa 
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step5.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+6. Andiamo innanzitutto a configurare il pacchetto aggiuntivo che abbiamo installato
+    - Guardando nel menù di sinistra selezioniamo la voce *Middleware and Software Packs*
+    - Selezioniamo X-CUBE-AI 
+    - Scegliamo la versione della libreria e specifichiamo il tipo di applicazione (nel nostro caso validation)
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step6.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+7. Selezioniamo nuovamente X-CUBE-AI dal menu a sinistra e carichiamo la nostra rete neurale
+    - Si possono in questa fase effettuare anche la *validazione su desktop* e l'analisi della rete che ci permetterà di comprendere se è necessario un qualche tipo di intervento prima del deploy 
+    - Spesso alcune reti neurali potrebbero essere troppo grandi a livello di flash oppure occupare troppa memoria ram, in questi casi è possibile ricorrere alla compressione direttamente da CubeMX oppure tornare in fase di progettazione della rete per applicare delle ottimizzazioni prima della conversione in formato tflite.
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step7.png'></img>
+<figcaption align='center'></figcaption>
+</figure> 
+
+8. Torniamo adesso nel menu di sinistra e selezioniamo la voce connectivity e poi USB_OTG_FS attivandola in modalità *Device Only*
+9. Di nuovo nel menu a sinistra in *middleware and software packs* selezioniamo *USB_DEVICE* e, aprendo il menu a tendina selezioniamo *Communication device class (Virtual Comm Port)*
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step9.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+10. Cambiando scheda andiamo in *Clock Configuration* e lasciamo che venga automaticamente sistemato il conflitto 
+    - Questa voce può cambiare a seconda della board e delle sue specifiche tecniche
+    - Nel nostro caso il clock di sistema viene modificato a *72 Mhz* che non è il massimo se consideriamo che questa nucleo può arrivare fino a 180 Mhz. 
+    - **Rimane quindi da provare la prestazione della scheda anche connessa tramite USART o UART che non creano problemi con la clock speed**
+
+La *pinout configuration* dovrebbe assumere più o meno questa forma arrivati a questo punto: 
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/FinalPinoutConfiguration.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+11. A questo punto nel tab Project Manager possiamo dare un nome al progetto e settare i seguenti: 
+    - Toolchain/IDE: Nel nostro caso STM32CubeIDE
+    - Posizione di salvataggio del codice che verrà generato da CubeMX 
+12. A questo punto basta cliccare su Generate Code in alto a sinistra e aprirlo all'interno dell'IDE. 
+13. Effettuare il Build del codice ed eseguirlo, in questo modo verrà fatto il flash sulla scheda. 
+14. Per verificare che tutto sia andato a buon fine bisogna munirsi di un terminale seriale in grado di mostrarci l'output proveniente dalla board. (Nel nostro caso Putty)
+15. Settare i valori come in figura
+    - La porta COM può variare a seconda della configurazione in uso, per esserne certi controllare il menu di gestione dispositivi di windows.
+    - Nel caso il sistema in uso sia linux è possibile controllare tramite la cartella /dev, dovrebbe trovarsi sotto /dev/ttyACMx
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step14.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+16. Una volta effettuato il collegamento premere il pulsante nero sulla board per il reset. A questo punto si dovrebbe avere una schermata come la seguente: 
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step16.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+17. A questo punto bisogna tornare al file *.ioc* e dal menu di X-CUBE-AI possiamo finalmente effettuare la validazione su target, tenendo sempre a mente di selezionare la porta COM giusta. 
+
+<figure>
+<img src='../DrawIO/STM32 Tutorial/step17.png'></img>
+<figcaption align='center'></figcaption>
+</figure>
+
+Aggiornando la lista dei tempi sulla base della validazione abbiamo quindi: 
+
+Tempi di inferenza medi (*tempi per la rete con batch size 1*): 
+- Desktop: 333.83 $\mu s $ (Notebook Python)
+- Destkop: 285.69 $\mu s $(File .py)  
+- RaspberryPi: 800.51 $\mu s $ (File .py)
+- NUCLEO-F446RE (72 Mhz): 148.74 $\mu s$ (X-CUBE-AI)
+
+Tra qualche giorno saremo probabilmente in grado di effettuare dei test anche con Arduino nano 33 BLE poiché è una delle board ufficialmente supportate da Tensorflow ed è possibile sfruttare direttamente le sue librerie native in C. 
+
