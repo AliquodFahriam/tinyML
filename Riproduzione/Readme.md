@@ -955,5 +955,13 @@ def inference_time_calculator(interpreter, input_full, input_details):
     
     return inference_sum / len(inference_records)
 ~~~
+Questo tipo di approccio riprende quello che è il metodo di calcolo automatico proposto dall'algoritmo di validazione su target di STM. 
+Per quanto riguarda il calcolo del tempo di inferenza su NUCLEO siamo riusciti ad effettuare il deploy con una applicazione di validazione su target.
 
-Tramite questo codice siamo stati in grado di farlo, è un approccio un po' "artigianale"
+Descriviamo di seguito il processo che ci ha portati a riuscire ad effettuare il deploy. 
+
+##### Deploy di AI su NUCLEO con XCUBE-AI
+1. Collegare NUCLEO al PC tramite un cavo USB-B -> USB-A
+2. Installare e aprire **STM32CubeMX** 
+    - La procedura può essere portata a termine anche utilizzando soltanto STM32CubeIDE ma, nel momento in cui scrivo c'è un bug al momento della generazione del codice che non permette alla procedura di andare a buon fine
+3.
