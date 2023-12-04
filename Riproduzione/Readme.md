@@ -913,3 +913,17 @@ I prossimi passi in questo senso sono:
 - Passare i dati dal PC alla raspberry (via USB o protocolli wireless) per fare inferenza online
 
 Il secondo punto avrà precedenza minore rispetto al deploymemnt su NUCLEO. 
+
+#### Aggiornamento 04/12/23
+
+Abbiamo creato una nuova repositiory in cui inserire per comodità i file destinati alla raspberry pi in modo tale da non dover scaricare questa repository che di per sé non saerbbe utile ai nostri scopi. 
+
+In ogni caso cominciamo a raccogliere i dati per quanto riguarda l'inferenza utilizzando il modello "small" addestrato con la funzione di loss QUAD-QUAD e con batch_size ridotta a 1 elemento per poterlo caricare anche sulla NUCLEO. 
+
+Tempi di inferenza medi (*tempi per la rete con batch size 1*): 
+- Desktop: 333.83 $\mu s $ (Notebook Python)
+- Destkop: 285.69 $\mu s $(File Py)  
+- RaspberryPi: 800.51 $\mu s $
+
+È evidente come l'utilizzo di python stia riducendo le prestazioni portando il tempo di inferenza medio ad alzarsi notevolmente. 
+
