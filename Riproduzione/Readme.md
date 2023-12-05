@@ -1054,3 +1054,19 @@ Tempi di inferenza medi (*tempi per la rete con batch size 1*):
 
 Tra qualche giorno saremo probabilmente in grado di effettuare dei test anche con Arduino nano 33 BLE poiché è una delle board ufficialmente supportate da Tensorflow ed è possibile sfruttare direttamente le sue librerie native in C. 
 
+#### Aggiornamenti 5/12/2023 
+Il seguente codice serve per abilitare il debug con printf sulla board. 
+Sostanzialmente una ridefinizione della funzione write che deve essere inserita all'interno di *main.c*. 
+
+Inoltre devono ovviamente essere inclusa la libreria *stdio.h*.  
+~~~ C 
+int _write(int file, char *ptr, int len)
+{
+  /* Implement your write code here, this is used by puts and printf for example */
+  int i=0;
+  for(i=0 ; i<len ; i++) 
+    ITM_SendChar((*ptr++));
+  return len;
+} 
+
+~~~
