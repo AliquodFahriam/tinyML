@@ -1070,3 +1070,94 @@ int _write(int file, char *ptr, int len)
 } 
 
 ~~~
+
+#### Aggiornamenti 6/12/2023 
+Il lavoro di oggi si è concentrato sulla trasmissione dei dati dalla board al PC e viceversa, il lavoro è stato portato avanti utilizzando STM32CubeIDE. 
+L'idea è quella di utilizzare la raspberry Pi per fornire dinamicamente i dati in ingresso al MCU che li elaborerà e procederà all'inferenza *online*. 
+Il primo passo è ovviamente quello di riuscire a comunicare anche semplici stringhe di testo. 
+
+1. Abbiamo configurato i pini PA2 e PA3 come rispettivamente Trasmissione e Ricezione (*TX e RX*) per la connettività USART. 
+<figure>
+<img src=''></img>
+<figcaption align='center'></figcaption>
+</figure>
+2. Abbiamo definito due buffer, uno per la lettura e un altro per la memorizzazione effettiva.
+
+~~~ C
+uint8_t  rx_buffer[10]; //La dimensione dei buffer è puramente indicativa. 
+uint8_t main_buffer[20]; 
+~~~
+3. Abbiamo aggiunto al codice la ridefinizione della funzione *HAL_UARTEx_RxEventCallback* che ci permette di definire ciò che avviene una volta completata la lettura.  
+
+~~~ C
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+  {
+	 if(huart -> Instance == USART2){
+		 memcpy(main_buffer, rx_buffer, Size); // Andiamo a copiare ciò che è contenuto all'interno del buffer di lettura all'interno di quello principale
+		 HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, 10);
+		 __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT); //Disabilitiamo l'interrupt di metà trasferimento che altrimenti potrebbe risultare problematico.
+
+	 }
+  }
+~~~
+
+4. Esternamente al while loop andiamo a inserire queste due righe di codice in cui la prima richiama la funzione per la lettura da UART, mentre la seconda va a disabilitare l'interrupt di metà trasferimento. 
+~~~ C 
+HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, 10);
+ __HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+~~~
+
+Ricordiamo infine che per far funzionare la funzione *HAL_UARTEx_RecieveToIdle_DMA* bisogna innanzitutto andare ad aggiungere una DMA request dalle impostazioni della USART che si vuole configurare direttamente dal file *.ioc*. Ciò può essere fatto andando nel menu di sinistra all'interno del file *.ioc*, selezionando la USART che si vuole configurare, e aggiungendo una DMA request all'interno della TAB **DMA Settings**.
+
+Abbiamo adesso deciso di testare la connessione USART tra la Raspberry Pi, che dovrebbe occuparsi di gestire i dati e la NUCLEO che dovrebbe essere invece in grado di effettuare l'inferenza sui dati raccolti da quest'ultima. 
+
+In particolare abbiamo utilizzato la libreria *serial* di python per gestire la connessione da parte della Raspberry, mentre la connessione viene gestita come spiegato in precedenza per quanto riguarda la NUCLEO. 
+
+In particolare al momento abbiamo implementato quanto segue: 
+- La raspberry invia il proprio nome alla nucleo
+- La nucleo, una volta ricevuto il messaggio lo rimanda indietro all'infinito (o fino a che non si preme reset)
+- La raspberry mostra a schermo ciò che ha ricevuto dalla nucleo
+
+Ciò è fatto proprio per comprendere se la comunicazione può andare a buon fine da entrambi i lati. 
+
+In particolare: 
+- Raspberry
+~~~ Python
+import serial
+import time
+
+ser = serial.Serial(port = '/dev/ttyACM0', baudrate=115200, timeout = 1) 
+time.sleep(1)
+ser.reset_input_buffer()
+print("Serial OK" )
+
+stringa = "Raspberry"
+ser.write(stringa.encode('UTF-8'))
+try: 
+	while True: 
+		time.sleep(0.01) #Per una questione di risorse
+		if ser.in_waiting > 0: 
+			line = ser.readline().decode('UTF-8').rstrip()
+			print(line)
+except KeyboardInterrupt: 
+	print("Closing Serial Comm")
+	ser.close()
+
+~~~
+
+- Nucleo (il seguente codice si trova all'interno del while loop)
+~~~ C
+for(int i = 0; i < 20; i++){
+		  if((main_buffer[i] == '\0' && i != 0) || main_buffer[i] == '\n'){
+			  main_buffer[i] = '\n';
+			  break;
+		  }
+	  }
+	  if(main_buffer[0] != '\0'){
+		  HAL_UART_Transmit(&huart2, main_buffer, 20, 100);
+		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	  }
+	  HAL_Delay(250);
+~~~
+
+Il prossimo passo è comprendere come fare a inviare tutti i dati contenuti in una riga di dataset (come se provenissero quindi da dei sensori) per poi effettuare la fase di inferenza. 
