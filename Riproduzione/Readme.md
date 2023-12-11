@@ -1161,3 +1161,110 @@ for(int i = 0; i < 20; i++){
 ~~~
 
 Il prossimo passo è comprendere come fare a inviare tutti i dati contenuti in una riga di dataset (come se provenissero quindi da dei sensori) per poi effettuare la fase di inferenza. 
+
+#### Aggiornamenti 11/12/2023
+
+Una volta compreso come inviare dati attraverso una connessione UART, abbiamo cercato di capire come fare a inviare i dati correttamente dalla raspberry alla Nucleo / Arduino. 
+
+Abbiamo pensato a due approcci differenti: 
+
+1. Inviare ogni "cella" del dataset singolarmente
+2. Inviare una intera riga del dataset
+
+Questi approcci hanno entrambi dei pro e dei contro. 
+Nel primo caso l'evidente svantaggio è quello di dovere inviare 30*14 volte dati attraverso la connessione, oltre che a dover gestire in maniera molto più rigida la sincronizzazione tra il dispositivo di invio e di ricezione. 
+Tuttavia, in questo modo, siamo in grado di non dover spostare su MCU la complessità che deriva dal dover tokenizzare una stringa di valori concatenati. Ovvero, essendo che la connessione UART ci permette di inviare stringhe, dovremmo, per una singola riga, concatenare i valori che la compongono ad esempio in questo modo: *"1234,123; 456,23;..;"* e, solo a questo punto, andare a prelevare i valori dalla stringa direttamente da MCU. Questo allunga molto la dimensione del codice sul target e può portare ad uno spreco di memoria. 
+
+Il secondo caso è invece esattamente l'opposto, utilizziamo meno la connessione UART (solo 30 volte), ma dobbiamo fare i conti su una complessità computazionale che sta più verso il target che verso il device che i dati li invia. 
+
+Ovviamente in un contesto applicativo reale dovremmo affrontare problemi ben diversi data la possibilità di leggenre direttamente dai sensori. 
+
+Siamo riusciti ad implementare con successo il primo tipo di comunicazione su Arduino e può essere trovato all'interno della cartella TargetCode all'interno della Root della repository.
+
+Espongo brevemente:
+
+**recieve_data.ino**:
+Dopo aver importato le librerie necessarie dichiariamo un array di 14 elementi che servirà a contenere i dati di una riga del dataset di test.
+
+All'interno del loop utilizziamo la funzione *get_data* della libreria *serial_utils* che ha il compito di recuperare i dati.
+
+Il ciclo *for* finale serve soltanto in fase di debugging per controllare la presenza dei valori corretti all'interno dell'array attraverso il display LCD piuttosto che tramite l'utilizzo della seriale. 
+~~~ C++
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include "serial_utils.h"
+
+LiquidCrystal_I2C lcd(0x3f, 16,2); 
+double entry_list[14];
+
+
+void setup() {
+  // put your setup code here, to run once:
+  lcd.begin(); 
+  lcd.backlight(); 
+  lcd.clear(); 
+
+  //Serial.begin(115200);
+  lcd.print("Ready for Data");
+
+}
+
+void loop() {
+  
+  
+  get_data(entry_list, 14);
+
+  
+  
+  for(uint8_t i = 0; i < 14 ; i++){
+    lcd.clear(); 
+    lcd.print(String(entry_list[i])+" "+i);
+    delay(2000);
+  }
+  
+ 
+}
+
+~~~
+
+**serial_utils.cpp**
+
+La funzione prende in input un puntatore chiamato entry_list (che poi sarà il nostro array di 14 elementi) e la sua dimensione.
+
+All'interno di un ciclo infinito controlliamo se sono disponibili dati dalla seriale e, nel caso in cui lo siano, li memorizziamo all'interno di una stringa chiamata new_message. 
+
+A questo punto eliminiamo tutti i dati dalla porta seriale per non triggerare automaticamente l'if al ciclo successivo. 
+
+Controlliamo che il contatore sia sempre minore di size e andiamo a inserire i dati (convertiti da stringa in float ) all'interno dell'array ed incrementare il contatore. 
+
+Una volta che counter ha raggiunto *size* possiamo chiudere il ciclo. 
+~~~ C++
+void get_data(double* entry_list, uint8_t size) {
+  Serial.begin(115200);
+  uint8_t counter = 0;
+
+  while (true) {
+    if (Serial.available() > 0) {
+      String new_message = Serial.readStringUntil('\n');
+      
+      //SERIAL FLUSH
+      while (Serial.available() > 0) {
+        char t = Serial.read();
+      }
+
+      if (counter < size) {
+        entry_list[counter] = new_message.toDouble();
+        Serial.println("OK\n");
+        //Serial.println(entry_list[counter], 17);
+        counter++;  
+      }
+
+      if (counter == size) {
+        break;  // Esci dal loop quando hai riempito l'array
+      }
+    }
+  }
+}
+~~~
+
+Una volta fatto questo dobbiamo estendere il ragionamento per riempire un array che rispetti le dimensioni dell'input per la nostra rete. 
