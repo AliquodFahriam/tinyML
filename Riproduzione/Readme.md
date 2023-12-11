@@ -1183,7 +1183,7 @@ Siamo riusciti ad implementare con successo il primo tipo di comunicazione su Ar
 
 Espongo brevemente:
 
-**recieve_data.ino**:
+**receive_data.ino**:
 Dopo aver importato le librerie necessarie dichiariamo un array di 14 elementi che servirà a contenere i dati di una riga del dataset di test.
 
 All'interno del loop utilizziamo la funzione *get_data* della libreria *serial_utils* che ha il compito di recuperare i dati.
@@ -1268,3 +1268,12 @@ void get_data(double* entry_list, uint8_t size) {
 ~~~
 
 Una volta fatto questo dobbiamo estendere il ragionamento per riempire un array che rispetti le dimensioni dell'input per la nostra rete. 
+
+Dal punto di vista di chi invia invece abbiamo un codice molto simile agli esempi precedenti che può essere reperito all'interno di *'TargetCode/DataTransfer/Rasp/serial_mono_send.py'* 
+
+In ultimo abbiamo esteso il caso della "riga" all'intero frame che poi rappresenterà l'input per la rete.
+In questo caso, lato arduino ci siamo semplicemente limitati ad arricchire il file **serial_utils.cpp** e a modificare leggermente il file principale. 
+Mentre all'interno del nuovo file python per la raspberry abbiamo semplicemente aggiunto un ciclo for esterno che scorre le righe del frame di 30 elementi da inviare. I files sono in *TargetCode/FullFrame DataTransfer*
+
+In questo modo siamo in grado di fornire al microcontrollore un input completo per l'inferenza da parte della rete. A questo punto dobbiamo automatizzare il processo di invio di nuovi frames da parte della raspberry e caricare la rete neurale all'interno del microcontrollore per effettuare l'inferenza online. 
+In questo caso tuttavia a causa della nostra scelta progettuale l'invio dei dati necessari dura molto più che qualche secondo e potrebbe essere necessario tornare sui nostri passi per spostare la complessità nuovamente sulla MCU. 
