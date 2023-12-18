@@ -1278,4 +1278,205 @@ Mentre all'interno del nuovo file python per la raspberry abbiamo semplicemente 
 In questo modo siamo in grado di fornire al microcontrollore un input completo per l'inferenza da parte della rete. A questo punto dobbiamo automatizzare il processo di invio di nuovi frames da parte della raspberry e caricare la rete neurale all'interno del microcontrollore per effettuare l'inferenza online. 
 In questo caso tuttavia a causa della nostra scelta progettuale l'invio dei dati necessari dura molto più che qualche secondo e potrebbe essere necessario tornare sui nostri passi per spostare la complessità nuovamente sulla MCU. 
 
+#### Aggiornamenti 18/12/2023
+
+Siamo riusciti a fare inferenza live anche su NUCLEO, procediamo presentando il codice che può essere trovato all'interno della directory *TargetCode/XCUBEAI/NUCLEO_F446RE/XCubeAI_LCD_5th*
+
+Per quanto riguarda il *"motore"* che fa girare la rete si tratta di X-CUBE-AI. Software proprietario di STM32 che genera in automatico le librerie necessarie a far funzionare la rete correttamente. 
+Presentiamo di seguito il codice che si trova all'interno di *main.c*, che sostanzialmente è ciò che viene eseguito e nonè automaticamente generato da STM32CUBE IDE. 
+
+##### Headers
+In questa sezione troviamo tutti gli import necessari al funzionamento dell'applicazione. 
+
+Gli include della AI possono variare a seconda di che nome viene inserito in fase di configurazione del file *.ioc*, nel nostro caso abbiamo scelto **network**.
+Gli altri include sono relativi alla libreria liquidcrystal (che serve per utilizzare il display LCD) e le librerie standard per la gestione e la conversione dei dati.  
+~~~C
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "string.h"
+#include "stdio.h"
+#include <stdlib.h>
+//AI INCLUDES
+#include "ai_platform.h"
+#include "network.h"
+#include "network_data.h"
+
+//LCD DEBUG
+#include "liquidcrystal_i2c.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+~~~
+
+
+##### USART Callbacks
+In questa sezione troviamo le variabili necessarie alla comunicazione UART, alla rete neurale e, soprattutto, le funzioni di callback che ci permettono di gestire l'ingresso dei dati e il popolamento del vettore di input. 
+
+Istanziamo inoltre i prototipi per le funzioni di INIT e RUN che definiremo in seguito. (Questa parte del codice può essere personalizzata ma dovrebbe essera abbastanza standard). 
+
+Per la comunicazione utilizziamo la funzione *HAL_UARTEx_ReceiveToIdle_DMA()* per la ricezione dei dati e la funzione *HAL_UART_Transmit_DMA()*. 
+All'interno della prima funzione di callback utilizziamo un counter per tenere traccia della posizione dell'elemento all'interno dell'array di input (monodimensionale di 30*14 = 420 elementi), dopodiché resettiamo il buffer di ricezione con *memset(rx_buffer, 0, sizeof(rx_buffer));*e infine avviamo la trasmissione della stringa *"OK\n"*. 
+
+Per quanto riguarda la seconda callback riavviamo il DMA e disabilitiamo l'interrupt di metà ricezione. Questo è dovuto al fatto che non abbiamo utilizzato un DMA circolare che non avrebbe avuto bisogno di essere eseguito nuovamente. 
+
+~~~C
+//[...]
+
+/* USER CODE BEGIN PV */
+ai_handle network;
+float aiInData[AI_NETWORK_IN_1_SIZE];
+float aiOutData[AI_NETWORK_OUT_1_SIZE];
+ai_u8 activations[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
+
+ai_buffer * ai_input;
+ai_buffer * ai_output;
+
+/* USER CODE END PV */
+
+//[...]
+
+/* USER CODE BEGIN PFP */
+static void AI_Init(void);
+static void AI_Run(float *pIn, float *pOut);
+/* USER CODE END PFP */
+
+//[...]
+
+/* USER CODE BEGIN 0 */
+
+unsigned char rx_buffer[11];
+uint16_t counter = 0;
+uint8_t response[] = "OK\n";
+
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+  {
+	 if(huart -> Instance == USART2){
+		 if(counter < 420 ){
+		 		aiInData[counter] = atof((char *)rx_buffer);
+		 		counter++;
+		 		memset(rx_buffer, 0, sizeof(rx_buffer));
+		 		HAL_UART_Transmit_DMA(&huart2, response, sizeof(response));
+		 }
+
+	 }
+  }
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, 10);
+	__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+}
+
+
+
+/* USER CODE END 0 */
+
+~~~
+
+##### Inizializzazione
+Inizializziamo il display LCD, la comunicazione via UART e X-CUBE-AI
+~~~ C
+/* USER CODE BEGIN 2 */
+  	HD44780_Init(2);
+  	HD44780_Clear();
+  	HD44780_SetCursor(0,0);
+  	HD44780_PrintStr("Ready for Data");
+
+  	//USART
+  	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, rx_buffer, sizeof(rx_buffer));
+  	__HAL_DMA_DISABLE_IT(&hdma_usart2_rx, DMA_IT_HT);
+  	//AI_INIT
+  	AI_Init();
+  /* USER CODE END 2 */
+
+~~~
+
+##### While loop principale
+All'interno del while loop ci limitiamo a runnare l'inferenza nel momento in cui counter coincide con il numero di elementi in input e chiamiamo *AI_Run()* per far partire il processo di inferenza sui dati di input che abbiamo raccolto, grazie alla callback, all'interno del buffer *aiInData*. Printiamo il valore inferito, dopodiché resettiamo il valore di counter per prepararci ad una nuova inferenza. 
+~~~ C
+/* USER CODE BEGIN WHILE */
+  while (1)
+  {
+	  /*DEBUG
+	  char uint16String[10];
+	  sprintf(uint16String, "%u", counter);
+	  HD44780_Clear();
+	  HD44780_SetCursor(0, 0);
+	  HD44780_PrintStr(uint16String);
+	  HAL_Delay(500);
+	  DEBUG*/
+	  if(counter ==  AI_NETWORK_IN_1_SIZE){
+	  		  	HD44780_Clear();
+	  		  	HD44780_SetCursor(0,0);
+	  		  	HD44780_PrintStr("Inference");
+	  	        printf("Running inference\r\n");
+	  	        HAL_Delay(2000);
+
+	  	        AI_Run(aiInData, aiOutData);
+	  	        HD44780_Clear();
+	  	        HD44780_SetCursor(0,0);
+
+	  	        //OUTPUT PRINT ON LCD
+	  	        char floatString[12];
+	  	        snprintf(floatString, sizeof(floatString), "%f", aiOutData[0]);
+
+	  	        HD44780_PrintStr(floatString);
+	  	        HAL_Delay(2000);
+
+              //Counter Reset
+	  	        counter = 0;
+	  	  }
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+~~~
+
+##### *AI_Init() e AI_Run()
+Riportiamo la definizione di entrambe queste due funzioni per completezza. 
+~~~ C
+/* USER CODE BEGIN 4 */
+static void AI_Init(void)
+{
+  ai_error err;
+
+  /* Create a local array with the addresses of the activations buffers */
+  const ai_handle act_addr[] = { activations };
+  /* Create an instance of the model */
+  err = ai_network_create_and_init(&network, act_addr, NULL);
+  if (err.type != AI_ERROR_NONE) {
+    printf("ai_network_create error - type=%d code=%d\r\n", err.type, err.code);
+    Error_Handler();
+  }
+  ai_input = ai_network_inputs_get(network, NULL);
+  ai_output = ai_network_outputs_get(network, NULL);
+}
+
+
+static void AI_Run(float *pIn, float *pOut)
+{
+  ai_i32 batch;
+  ai_error err;
+
+  /* Update IO handlers with the data payload */
+  ai_input[0].data = AI_HANDLE_PTR(pIn);
+  ai_output[0].data = AI_HANDLE_PTR(pOut);
+
+  batch = ai_network_run(network, ai_input, ai_output);
+  if (batch != 1) {
+    err = ai_network_get_error(network);
+    printf("AI ai_network_run error - type=%d code=%d\r\n", err.type, err.code);
+    Error_Handler();
+  }
+}
+/* USER CODE END 4 */ 
+~~~
+
+Al momento entrambi i microcontrollori sono in grado di effettuare una singola inferenza, tuttavia la causa non è determinata dal codice al loro interno ma dal codice all'interno della raspberry che dovrebbe prevedere l'invio di più di un frame di dati. Di base il codice sia per arduino che per NUCLEO funziona correttamente e i risultati coincidono sia tra i due che con quelli inferiti dalla rete in formato *.tflite* che può essere caricata anche su Desktop. 
 - Fare l'outline!!!

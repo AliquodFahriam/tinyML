@@ -1,0 +1,200 @@
+Neural Network Tools for STM32 family v1.7.0 (stm.ai v8.1.0-19520)
+Created date          : 2023-12-18 11:06:24
+Parameters            : generate --name network -m C:/Users/Riccardo/Desktop/small_lstm_batch_1_quad.tflite --type tflite --compression none --verbosity 1 --workspace C:\Users\Riccardo\AppData\Local\Temp\mxAI_workspace422853126059600536123449758383307 --output C:\Users\Riccardo\.stm32cubemx\network_output --allocate-inputs --series stm32f4 --allocate-outputs
+
+Exec/report summary (generate)
+--------------------------------------------------------------------------------------------------------------
+model file         :   C:\Users\Riccardo\Desktop\small_lstm_batch_1_quad.tflite                               
+type               :   tflite                                                                                 
+c_name             :   network                                                                                
+compression        :   none                                                                                   
+options            :   allocate-inputs, allocate-outputs                                                      
+optimization       :   balanced                                                                               
+target/series      :   stm32f4                                                                                
+workspace dir      :   C:\Users\Riccardo\AppData\Local\Temp\mxAI_workspace422853126059600536123449758383307   
+output dir         :   C:\Users\Riccardo\.stm32cubemx\network_output                                          
+model_fmt          :   float                                                                                  
+model_name         :   small_lstm_batch_1_quad                                                                
+model_hash         :   626fb963c3913ce30b0b2f83c6a224f6                                                       
+params #           :   56,701 items (221.49 KiB)                                                              
+--------------------------------------------------------------------------------------------------------------
+input 1/1          :   'serving_default_x0' (domain:activations/**default**)                                  
+                   :   420 items, 1.64 KiB, ai_float, float, (1,30,14)                                        
+output 1/1         :   'nl_5_nl' (domain:activations/**default**)                                             
+                   :   1 items, 4 B, ai_float, float, (1,1)                                                   
+macc               :   897,857                                                                                
+weights (ro)       :   226,804 B (221.49 KiB) (1 segment)                                                     
+activations (rw)   :   11,640 B (11.37 KiB) (1 segment) *                                                     
+ram (total)        :   11,640 B (11.37 KiB) = 11,640 + 0 + 0                                                  
+--------------------------------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers can be used from the activations buffer
+
+Model name - small_lstm_batch_1_quad ['serving_default_x0'] ['nl_5_nl']
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+m_id   layer (type,original)                                       oshape                 param/size            macc                                connected to   | c_size             c_macc              c_type                        
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+0      serving_default_x0 (Input, )                                [b:1,h:30,h:30,c:14]                                                                            | +72,720(+100.0%)   +541,800(+100.0%)   lstm_of32[0]                  
+       lstm_0 (LSTM, UNIDIRECTIONAL_SEQUENCE_LSTM)                 [b:1,h:30,h:30,c:60]   18,180/72,720      541,800                          serving_default_x0   | -72,720(-100.0%)   -541,800(-100.0%)   
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+1      lstm_1 (LSTM, UNIDIRECTIONAL_SEQUENCE_LSTM)                 [b:1,h:30,h:30,c:30]   11,010/44,040      328,500                                      lstm_0   |                                        lstm_of32[1]                  
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+2      reshape_2 (Reshape, RESHAPE)                                [b:1,c:900]                                                                            lstm_1   |                                        
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+3      sequential_dense_MatMul (Placeholder, )                     [h:30,h:30,c:900]      27,000/108,000                                                           | +120(+0.1%)        +27,060(+100.0%)    dense_of32/nl_of32[2, 3]      
+       sequential_dense_BiasAdd_ReadVariableOp (Placeholder, )     [c:30]                 30/120                                                                   | -120(-100.0%)                          
+       gemm_3 (Gemm, FULLY_CONNECTED)                              [b:1,c:30]                                 27,030                                   reshape_2   |                    -27,030(-100.0%)    
+                                                                                                                                         sequential_dense_MatMul   | 
+                                                                                                                         sequential_dense_BiasAdd_ReadVariableOp   | 
+       nl_3_nl (Nonlinearity, FULLY_CONNECTED)                     [b:1,c:30]                                     30                                      gemm_3   |                    -30(-100.0%)        
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+4      sequential_dense_1_MatMul (Placeholder, )                   [h:15,h:15,c:30]       450/1,800                                                                | +60(+3.3%)         +480(+100.0%)       dense_of32/nl_of32[4, 5]      
+       sequential_dense_1_BiasAdd_ReadVariableOp (Placeholder, )   [c:15]                 15/60                                                                    | -60(-100.0%)                           
+       gemm_4 (Gemm, FULLY_CONNECTED)                              [b:1,c:15]                                    465                                     nl_3_nl   |                    -465(-100.0%)       
+                                                                                                                                       sequential_dense_1_MatMul   | 
+                                                                                                                       sequential_dense_1_BiasAdd_ReadVariableOp   | 
+       nl_4_nl (Nonlinearity, FULLY_CONNECTED)                     [b:1,c:15]                                     15                                      gemm_4   |                    -15(-100.0%)        
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+5      sequential_dense_2_MatMul (Placeholder, )                   [b:1,c:15]             15/60                                                                    | +4(+6.7%)          +17(+100.0%)        dense_of32/nl_of32[o][6, 7]   
+       sequential_dense_2_BiasAdd_ReadVariableOp (Placeholder, )   [c:1]                  1/4                                                                      | -4(-100.0%)                            
+       gemm_5 (Gemm, FULLY_CONNECTED)                              [b:1,c:1]                                      16                                     nl_4_nl   |                    -16(-100.0%)        
+                                                                                                                                       sequential_dense_2_MatMul   | 
+                                                                                                                       sequential_dense_2_BiasAdd_ReadVariableOp   | 
+       nl_5_nl (Nonlinearity, FULLY_CONNECTED)                     [b:1,c:1]                                       1                                      gemm_5   |                    -1(-100.0%)         
+------ ----------------------------------------------------------- ---------------------- ---------------- --------- ------------------------------------------- --- ------------------ ------------------- ----------------------------- 
+model/c-model: macc=897,857/897,857  weights=226,804/226,804  activations=--/11,640 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : small_lstm_batch_1_quad
+c-name                : network
+c-node #              : 8
+c-array #             : 25
+activations size      : 11640 (1 segment)
+weights size          : 226804 (1 segment)
+macc                  : 897857
+inputs                : ['serving_default_x0_output']
+outputs               : ['nl_5_nl_output']
+
+C-Arrays (25)
+------ --------------------------- -------------- ------------------------- ------------- --------- --------- 
+c_id   name (*_array)              item/size      domain/mem-pool           c-type        fmt       comment   
+------ --------------------------- -------------- ------------------------- ------------- --------- --------- 
+0      lstm_1_recurrent            3600/14400     weights/weights           const float   float32             
+1      lstm_1_peephole             90/360         weights/weights           const float   float32             
+2      lstm_1_bias                 120/480        weights/weights           const float   float32             
+3      gemm_3_weights              27000/108000   weights/weights           const float   float32             
+4      gemm_3_bias                 30/120         weights/weights           const float   float32             
+5      gemm_4_weights              450/1800       weights/weights           const float   float32             
+6      gemm_4_bias                 15/60          weights/weights           const float   float32             
+7      gemm_5_weights              15/60          weights/weights           const float   float32             
+8      gemm_5_bias                 1/4            weights/weights           const float   float32             
+9      lstm_0_scratch0             420/1680       activations/**default**   float         float32             
+10     lstm_1_scratch0             210/840        activations/**default**   float         float32             
+11     serving_default_x0_output   420/1680       activations/**default**   float         float32   /input    
+12     lstm_0_output0              1800/7200      activations/**default**   float         float32             
+13     lstm_1_output0              900/3600       activations/**default**   float         float32             
+14     gemm_3_output               30/120         activations/**default**   float         float32             
+15     nl_3_nl_output              30/120         activations/**default**   float         float32             
+16     gemm_4_output               15/60          activations/**default**   float         float32             
+17     nl_4_nl_output              15/60          activations/**default**   float         float32             
+18     gemm_5_output               1/4            activations/**default**   float         float32             
+19     nl_5_nl_output              1/4            activations/**default**   float         float32   /output   
+20     lstm_0_kernel               3360/13440     weights/weights           const float   float32             
+21     lstm_0_recurrent            14400/57600    weights/weights           const float   float32             
+22     lstm_0_peephole             180/720        weights/weights           const float   float32             
+23     lstm_0_bias                 240/960        weights/weights           const float   float32             
+24     lstm_1_kernel               7200/28800     weights/weights           const float   float32             
+------ --------------------------- -------------- ------------------------- ------------- --------- --------- 
+
+C-Layers (8)
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+c_id   name (*_layer)   id   layer_type   macc     rom      tensors                        shape (array id)   
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+0      lstm_0           0    lstm         541800   72720    I: serving_default_x0_output   (1,30,14) (11)     
+                                                            S: lstm_0_scratch0                                
+                                                            W: lstm_0_kernel               (14,240) (20)      
+                                                            W: lstm_0_recurrent            (60,240) (21)      
+                                                            W: lstm_0_peephole             (1,180) (22)       
+                                                            W: lstm_0_bias                 (240,) (23)        
+                                                            O: lstm_0_output0              (1,30,60) (12)     
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+1      lstm_1           1    lstm         328500   44040    I: lstm_0_output0              (1,30,60) (12)     
+                                                            S: lstm_1_scratch0                                
+                                                            W: lstm_1_kernel               (60,120) (24)      
+                                                            W: lstm_1_recurrent            (30,120) (0)       
+                                                            W: lstm_1_peephole             (1,90) (1)         
+                                                            W: lstm_1_bias                 (120,) (2)         
+                                                            O: lstm_1_output0              (1,30,30) (13)     
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+2      gemm_3           3    dense        27030    108120   I: lstm_1_output00             (1,900) (13)       
+                                                            W: gemm_3_weights              (900,30) (3)       
+                                                            W: gemm_3_bias                 (30,) (4)          
+                                                            O: gemm_3_output               (1,30) (14)        
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+3      nl_3_nl          3    nl           30       0        I: gemm_3_output               (1,30) (14)        
+                                                            O: nl_3_nl_output              (1,30) (15)        
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+4      gemm_4           4    dense        465      1860     I: nl_3_nl_output              (1,30) (15)        
+                                                            W: gemm_4_weights              (30,15) (5)        
+                                                            W: gemm_4_bias                 (15,) (6)          
+                                                            O: gemm_4_output               (1,15) (16)        
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+5      nl_4_nl          4    nl           15       0        I: gemm_4_output               (1,15) (16)        
+                                                            O: nl_4_nl_output              (1,15) (17)        
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+6      gemm_5           5    dense        16       64       I: nl_4_nl_output              (1,15) (17)        
+                                                            W: gemm_5_weights              (15,1) (7)         
+                                                            W: gemm_5_bias                 (1,) (8)           
+                                                            O: gemm_5_output               (1,1) (18)         
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+7      nl_5_nl          5    nl           1        0        I: gemm_5_output               (1,1) (18)         
+                                                            O: nl_5_nl_output              (1,1) (19)         
+------ ---------------- ---- ------------ -------- -------- ------------------------------ ------------------ 
+
+
+
+Number of operations per c-layer
+------- ------ ---------------- --------- -------------- -------- ---------- 
+c_id    m_id   name (type)            #op           type   #param   sparsity 
+------- ------ ---------------- --------- -------------- -------- ---------- 
+0       0      lstm_0 (lstm)      541,800   smul_f32_f32   18,180     0.0099 
+1       1      lstm_1 (lstm)      328,500   smul_f32_f32   11,010     0.0082 
+2       3      gemm_3 (dense)      27,030   smul_f32_f32   27,030     0.0000 
+3       3      nl_3_nl (nl)            30     op_f32_f32          
+4       4      gemm_4 (dense)         465   smul_f32_f32      465     0.0000 
+5       4      nl_4_nl (nl)            15     op_f32_f32          
+6       5      gemm_5 (dense)          16   smul_f32_f32       16     0.0000 
+7       5      nl_5_nl (nl)             1     op_f32_f32          
+------- ------ ---------------- --------- -------------- -------- ---------- 
+total                             897,857                  56,701     0.0048 
+
+Number of operation types
+---------------- --------- ----------- 
+operation type           #           % 
+---------------- --------- ----------- 
+smul_f32_f32       897,811      100.0% 
+op_f32_f32              46        0.0% 
+
+Complexity report (model)
+------ --------------------------- ------------------------- ------------------------- -------- 
+m_id   name                        c_macc                    c_rom                     c_id     
+------ --------------------------- ------------------------- ------------------------- -------- 
+0      serving_default_x0          ||||||||||||||||  60.3%   |||||||||||       32.1%   [0]      
+1      lstm_1                      ||||||||||        36.6%   |||||||           19.4%   [1]      
+3      sequential_dense_MatMul     |                  3.0%   ||||||||||||||||  47.7%   [2, 3]   
+4      sequential_dense_1_MatMul   |                  0.1%   |                  0.8%   [4, 5]   
+5      sequential_dense_2_MatMul   |                  0.0%   |                  0.0%   [6, 7]   
+------ --------------------------- ------------------------- ------------------------- -------- 
+macc=897,857 weights=226,804 act=11,640 ram_io=0
+
+Generated files (7)
+--------------------------------------------------------------------- 
+C:\Users\Riccardo\.stm32cubemx\network_output\network_config.h        
+C:\Users\Riccardo\.stm32cubemx\network_output\network.h               
+C:\Users\Riccardo\.stm32cubemx\network_output\network.c               
+C:\Users\Riccardo\.stm32cubemx\network_output\network_data_params.h   
+C:\Users\Riccardo\.stm32cubemx\network_output\network_data_params.c   
+C:\Users\Riccardo\.stm32cubemx\network_output\network_data.h          
+C:\Users\Riccardo\.stm32cubemx\network_output\network_data.c          
