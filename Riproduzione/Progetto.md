@@ -1,4 +1,4 @@
-# Riproduzione *TynyML-based approach for Remaining Useful Life Prediction of Turbofan Engines*
+# Inferenza Live per calcolo della RUL (*Remaining Useful Life*) su motori a reazione con *TensorFlowLite Micro e X-CUBE-AI*  
 
 L'obiettivo di questo lavoro è ricreare i modelli di proposti all'interno del paper di cui sopra i quali si propongono di calcolare il valore di **RUL** (*Remaining Useful Life*) per quanto riguarda dei motori a reazione proposti dalla **NASA** all'interno del dataset <a href="https://data.nasa.gov/Aerospace/CMAPSS-Jet-Engine-Simulated-Data/ff5v-kuh6">C-MAPSS Aircraft Engine Simulator Data</a>. 
 
