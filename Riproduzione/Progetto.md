@@ -786,6 +786,150 @@ In questo caso tuttavia a causa della nostra scelta progettuale l'invio dei dati
 
 ## Inferenza Live su Arduino
 
+##### Headers
+Includiamo innanzitutto tutte le librerie necessarie per il funzionamento dell'applicazione. 
+Le prime due (Wire e LiquidCrystal) sono adibite al funzionamento del display LCD, seguono poi degli import standard di TensorFlow Lite Micro. 
+
+Da tenere presente la differenza tra *all_ops_resolver* e *micro_mutable_ops_resolver*. Gli ops resolver sono necessari al fine di caricare tutte le tipologie di layers necessarie per il funzionamento della rete neurale, nel nostro caso, (LSTM Small) abbiamo bisogno soltanto di 3 tipologie di layers: 
+- Unidirectional Sequence LSTM
+- Reshape
+- Fully Connected
+
+Utilizzando *all_ops_resolver* avremmo incluso tutti i possibili layer consumando inutilmente memoria sul microcontrollore. 
+
+
+~~~ C++
+//Includes LCD
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h> 
+
+//Includes TensorflowLite Micro Standard
+#include <TensorFlowLite.h>
+//#include "tensorflow/lite/micro/all_ops_resolver.h"
+#include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
+#include "tensorflow/lite/micro/micro_interpreter.h"
+#include "tensorflow/lite/micro/micro_log.h"
+#include "tensorflow/lite/micro/system_setup.h"
+#include "tensorflow/lite/schema/schema_generated.h"
+
+//Include personali
+#include "model_data.h"
+~~~
+
+##### Populate input vector
+All'interno di questa funzione, come da titolo, andiamo a popolare il vettore di input per la rete neurale con quello che sono i dati forniti dalla Raspberry Pi via UART. 
+Contrariamente a quanto accade in python, nonostante l'input shape del primo layer sia (1,30,14) non bisogna istanziare array multidimensionali ma basta inserire tutti i dati di input in sequenza in un array monodimensionale.
+Quello che conta è quindi il numero totale di dati, ovvero 30 (dimensione della finestra) e 14 (numero delle features). 
+
+
+~~~C++
+void populateInputVector(TfLiteTensor* input, int size) {
+  Serial.begin(115200); 
+  int counter = 0; 
+  MicroPrintf("Popoliamo il vettore di input");
+  while (true){
+    //input->data.f[i] = input_data[i];
+    if(Serial.available() > 0){
+      String new_message = Serial.readStringUntil('\n');
+      //SERIAL FLUSH
+      while(Serial.available() > 0){
+        char t = Serial.read(); 
+      }
+
+      if (counter < size){
+        input->data.f[counter] = new_message.toFloat();
+        Serial.println("OK\n"); 
+        counter++; 
+      }
+      if(counter == size){
+        break; 
+      }
+
+    }
+  }
+}
+~~~
+
+##### Dichiarazione variabili TFLite Micro e setup()
+
+In questa sezione del codice abbiamo dichiarato tutte le variabili necessarie. Procediamo ad un breve excursus: 
+- model: sarebbe un puntatore al modello da caricare in memoria
+- interpreter: la struttura dati preposta per l'effettiva inferenza
+- input e output
+- tensor_arena: la dimensione occupata dai tensori per la rete in memoria, non esiste un modo preciso per determinare questo dato se non seguire i messaggi di errore che verranno forniti direttamente sul terminale seriale dopo che il codice verrà *flashato* sulla board. Questo è uno dei punti più deboli di questo approccio, che tuttavia, specialmente per il numero di file coinvolti, risulta meno dispersivo.
+
+La tensor arena è necessaria per evitare l'allocazione dinamica della memoria su MCU che, dopo grandi periodi di attività, potrebbe portare a frammentazione della stessa.  
+
+
+All'interno della funzione di setup troviamo innanzitutto l'inizializzazione del display LCD, la funzione di inizializzazione del target (standard di TensorFlow Lite Micro) e il caricamento del modello in memoria. 
+
+Segue poi la dichiarazione degli *Op Resolver*, l'istanziazione dell'interprete, l'allocazione dei tensori e l'assegnazione dei vettori di input e output. 
+
+~~~ C++
+namespace {
+const tflite::Model* model = nullptr;
+tflite::MicroInterpreter* interpreter = nullptr;
+TfLiteTensor* input = nullptr; //Input size 420
+TfLiteTensor* output = nullptr;
+
+
+constexpr int kTensorArenaSize = 16384;
+// Keep aligned to 16 bytes for CMSIS
+alignas(16) uint8_t tensor_arena[kTensorArenaSize];
+}  // namespace
+
+
+
+
+void setup() {
+  lcd.begin(); 
+  lcd.backlight();
+  lcd.clear(); 
+  lcd.print("Ready"); 
+  // put your setup code here, to run once:
+  tflite::InitializeTarget();
+  model = tflite::GetModel(small_lstm_batch_1_quad_tflite);  
+  //static tflite::AllOpsResolver resolver;
+
+  static tflite::MicroMutableOpResolver<3> resolver;
+  resolver.AddUnidirectionalSequenceLSTM(); 
+  resolver.AddReshape();
+  resolver.AddFullyConnected();
+
+  static tflite::MicroInterpreter static_interpreter(
+      model, resolver, tensor_arena, kTensorArenaSize);
+  interpreter = &static_interpreter;
+  TfLiteStatus allocate_status = interpreter->AllocateTensors();
+  if (allocate_status != kTfLiteOk) {
+    MicroPrintf("AllocateTensors() failed");
+    return;
+  }
+  input = interpreter->input(0);
+  output = interpreter->output(0);
+
+}
+
+~~~
+
+##### Inferenza e loop()
+All'interno el loop si avvia innanzitutto la funzione per popolare il vettore di input, conclusa questa si può effettuare l'inferenza tramite il comando *interpreter->Invoke()*. 
+Nel caso l'inferenza non possa essere eseguita o non vada a buon fine verrà stampata una stringa su terminale seriale. 
+Nel caso in cui, invece, l'inferenza vada a buon fine si procede a mostrare l'output sul display LCD. 
+
+~~~ C++
+void loop() {
+  populateInputVector(input, 420);
+  if (kTfLiteOk != interpreter->Invoke()) {
+    MicroPrintf("Invoke failed.");
+  }
+  float RUL = output->data.f[0];
+
+  lcd.clear(); 
+  lcd.print("RUL: "+ String(RUL)); 
+
+}
+~~~
+
 
 ## Inferenza Live su NUCLEO
 
