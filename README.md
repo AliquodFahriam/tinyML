@@ -1,10 +1,23 @@
-# tinyML
-## Appuntati
-Quì sono presenti i documenti rilevanti con annessi file *.md* che li riassumono. Tutti i documenti in questa cartella sono stati evidenziati su notability 
-e poi esportati sul PC tramite LanDrop
+# TinyML con Tensorflow Lite e X-CUBE-AI
 
-## Documenti
-Raccolta di tutti i documenti importanti o meno che siano ai fini della ricerca. Un semplice database non c'è nulla da vedere qui
+#### Struttura della Repo: 
+- CMAPSS (Dataset)
+- Documenti 
+    - Appuntati 
+- DrawIO
+- Riproduzione
+    - dataset_new
+    - Experimental
+    - models
+- TargetCode
+    - Arduino
+        - DataTransfer
+        - FullFrame DataTransfer
+        - TensorflowLiteMicro_2nd_try
+    - XCUBEAI
+        - NUCLEO_F446RE
+            - XCubeAI_LCD_5th
 
-## News
-Raccolta dei documenti nuovi che vengono considerati rilevtanti durante la ricerca del giorno. 
+Tutte le informazioni sul progetto possono essere trovate all'interno di <a href="/Riproduzione/Progetto.md"> questo file </a>
+
+Tutti gli esperimenti, compresi quelli fallimentari possono esserer trovati all'interno della cartella Experimental. 
