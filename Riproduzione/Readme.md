@@ -1479,4 +1479,53 @@ static void AI_Run(float *pIn, float *pOut)
 ~~~
 
 Al momento entrambi i microcontrollori sono in grado di effettuare una singola inferenza, tuttavia la causa non è determinata dal codice al loro interno ma dal codice all'interno della raspberry che dovrebbe prevedere l'invio di più di un frame di dati. Di base il codice sia per arduino che per NUCLEO funziona correttamente e i risultati coincidono sia tra i due che con quelli inferiti dalla rete in formato *.tflite* che può essere caricata anche su Desktop. 
-- Fare l'outline!!!
+
+#### Aggiornamento 28/12/2023
+
+Abbiamo oggi deciso di integrare anche l'addestramento di una rete neurale di tipo CNN, i risultati sono i seguenti: 
+
+Specirfiche delle tre reti addestrate:
+
+***TODO: aggiungere la struttura delle reti***
+
+
+**CNN SMALL**
+| Lyer(Type)     | Output Shape   | Params |
+| -------------- | -------------- | ------ |
+| Conv1D         | (None, 23, 64)  | 7232  |
+| Conv1D         | (None, 18, 32)  | 12320 |
+| Conv1D         |  (None, 16, 16) |1552   |
+| MaxPooling1D   | (None,8,16)     | 0    |
+| Flatten          | (None, 128)     | 0    |
+| Dense | (None, 32)      | 4128     |
+| Dense | (None, 1)   | 33|
+
+**CNN LARGE**
+
+
+**CNN Alternativa**
+
+| Lyer(Type)     | Output Shape   | Params |
+| -------------- | -------------- | ------ |
+| Conv1D         | (None, 24, 256)  | 25344  |
+| Conv1D         | (None, 18, 96)  | 172128  |
+| Conv1D         |  (None, 12, 32) | 21536   |
+| GlobalAveragePooling1D  | (None,32)     | 0    |
+| Dense          | (None, 64)     | 2112    |
+| Dense | (None, 128)      | 8320     |
+| Dense | (None, 1)        |       129|
+
+|*CNN small* | *CNN large* |
+|----------|-----------|
+|**RMSE:** 18,7| **RMSE:** 18,8     |
+|**S-Score:** 781,19|**S-Score:** 858,00|  
+
+***TODO: Aggiungere i dati riguardanti il peso in memoria***
+
+CNN Alternativa: 
+- RMSE: 16, 01 
+- S-Score: 440,93
+
+
+***TODO:Aggiungere confronto tra le reti versione desktop e tflite*** 
+
