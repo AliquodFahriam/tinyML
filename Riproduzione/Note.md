@@ -1538,7 +1538,7 @@ CNN Alternativa QUAD-QUAD:
 - **S-Score**: 472.48
 
 
-##### Peso in memoria delle reti
+##### Peso in memoria delle reti (Formato TFlite)
 |LSTM Small | LSTM Large | CNN small | CNN Large | CNN Alternative|
 |-----------|------------|-----------|-----------|----------------|
 | **RAM:** 14,59  **FLASH:** 240 KB | **RAM:** 28,68 KB **FLASH**:691 KB | **RAM**: 11,30KB **FLASH**:112,29 KB| **RAM**: 19,84 KB **FLASH**:313,40 | **RAM:** 34,47 KB **FLASH**: 910 KB| 
@@ -1604,5 +1604,48 @@ CNN Alternativa QUAD-QUAD:
 
 *Nota: Probabilmente per quanto riguarda la large QUAD-QUAD si tratta di un caso particolarmente sfortunato dovuto ai procedimenti stocastici in fase di addestramento*
 
+**CNN Small e Large TFlite**
+| CNN Small | CNN Large |
+|-----------|-----------|
+|**RMSE**:18,87  | **RMSE**: 18,23  | 
+|**S-Score**:566.55| **S-Score**: 548,84|
+
+**CNN Alternative**
+
+|MSE | QUAD-QUAD| 
+|-----|---------|
+|**RMSE**:15,8  | **RMSE**: 15,93  | 
+|**S-Score**:472,48| **S-Score**: 434,02|
 
 
+Come è possibile constatare, le reti di tipo LSTM subiscono gravi perdite di performance a seguito della conversione in *tflite*. Al contrario le reti di tipo CNN, nonostante non riescano ad eguagliare le performance delle LSTM "*non convertite*", subiscono in maniera molto minore il calo di performance legato alla conversione. 
+Per quanto riguarda il deploy su microcontrollore, quindi saremmo tentati di scegliere proprio quest'ultima architettura, tuttavia il panorama delle opzioni si amplia se teniamo in considerazione le potenzialità di X-CUBE-AI. 
+
+Mi spiego meglio, il workflow per il deploy su microcontrollore di una applicazione TensorFlow Lite Micro è abbastanza standard: 
+1. Compilare e addestrare la rete tramite Keras e TensorFlow in Python 
+2. Convertire la rete in formato *.tflite* 
+3. Ricavare il file binario della rete tramite il comando: 
+~~~ bash 
+!xxd -i network.tflite > model_data.cc
+~~~
+4. Effettuare il deploy su microcontrollore come spiegato nei paragrafi precedenti. 
+
+Tuttavia, se parliamo di X-CUBE-AI non siamo limitati esclusivamente a questo tipo di modelli. Su microcontrollori che supportano questa tecnologia siamo in grado di utilizzare anche reti con formato *.h5*, ovvero il formato nativo di TensorFlow e Keras per desktop. Di conseguenza con una rete di dimensioni abbastanza ridotte potremmo essere in grado di sfruttarne la piena potenzialità. Ed è proprio questo che abbiamo fatto, effettuando il deploy della rete con performance migliori secondo l'S-Score, ovvero la LSTM small addestrata con funzione QUAD-QUAD di cui riportiamo le performance prima della conversione e dopo la conversione in tflite: 
+
+pre-conversione: 
+|RMSE | S-Score|
+|-----|--------|        
+|14,83| 363,66 |
+
+
+post-conversione: 
+|MSE | QUAD - QUAD | 
+|---------|--------| 
+|**RMSE:** 21,35         |    **RMSE:** 19,36|
+|**S-Score:** 1488.53    | **S-Score:** 876,9|
+
+Per una impronta in memoria che non varia di molto: 
+|Formato Keras | Formato TFLite|
+|--------------|---------------|
+|**RAM**:14,59 KB | **RAM**: 14,59 KB  | 
+| **FLASH:** 240,86 KB| **FLASH**:240 KB | 
