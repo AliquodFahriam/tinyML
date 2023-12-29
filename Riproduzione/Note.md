@@ -365,7 +365,7 @@ L'unico problema rimane sempre quello di fare in modo che, durante la selezione 
 <figcaption align='center'>Problema della finestra con diversi unit number</figsize>
 </figure>
 
-<a href = 'https://github.com/biswajitsahoo1111/rul_codes_open/tree/master'>Link</a>
+<a href = 'https://github.com/biswaji tsahoo1111/rul_codes_open/tree/master'>Link</a>
 
 #### La *piecewise-linear function*
 
@@ -1486,8 +1486,6 @@ Abbiamo oggi deciso di integrare anche l'addestramento di una rete neurale di ti
 
 Specirfiche delle tre reti addestrate:
 
-***TODO: aggiungere la struttura delle reti***
-
 
 **CNN SMALL**
 | Lyer(Type)     | Output Shape   | Params |
@@ -1502,6 +1500,16 @@ Specirfiche delle tre reti addestrate:
 
 **CNN LARGE**
 
+| Lyer(Type)     | Output Shape   | Params |
+| -------------- | -------------- | ------ |
+| Conv1D         | (None, 23, 64)  | 14464  |
+| Conv1D         | (None, 18, 64)  | 49216 |
+| Conv1D         | (None, 15, 32)  | 8224 |
+| Conv1D         |  (None, 14, 16) |1040   |
+| MaxPooling1D   | (None,7,16)     | 0    |
+| Flatten          | (None, 112)     | 0    |
+| Dense | (None, 32)      | 3616     |
+| Dense | (None, 1)   | 33|
 
 **CNN Alternativa**
 
@@ -1520,12 +1528,61 @@ Specirfiche delle tre reti addestrate:
 |**RMSE:** 18,7| **RMSE:** 18,8     |
 |**S-Score:** 781,19|**S-Score:** 858,00|  
 
-***TODO: Aggiungere i dati riguardanti il peso in memoria***
 
 CNN Alternativa: 
-- RMSE: 16, 01 
-- S-Score: 440,93
+- **RMSE**: 15,8 
+- **S-Score**: 472,93
+
+CNN Alternativa QUAD-QUAD: 
+- **RMSE**: 15,8
+- **S-Score**: 472.48
 
 
-***TODO:Aggiungere confronto tra le reti versione desktop e tflite*** 
+##### Peso in memoria delle reti
+|LSTM Small | LSTM Large | CNN small | CNN Large | CNN Alternative|
+|-----------|------------|-----------|-----------|----------------|
+| **RAM:** 14,59  **FLASH:** 240 KB | **RAM:** 28,68 KB **FLASH**:691 KB | **RAM**: 11,30KB **FLASH**:112,29 KB| **RAM**: 19,84 KB **FLASH**:313,40 | **RAM:** 34,47 KB **FLASH**: 910 KB| 
 
+
+##### Confronto prestazioni Keras e TFlite
+
+**LSTM Small QUAD**
+
+|RMSE | S-Score|
+|-----|--------|
+|14,83| 363,66 |
+
+**LSTM Small MSE**
+|RMSE | S-Score| 
+|------| ------| 
+| 15,0 | 440.03| 
+
+**LSTM Large QUAD**
+|RMSE | S-Score| 
+|------| ------| 
+| 14,6 | 367.13|
+
+**LSTM large MSE**
+|RMSE | S-Score| 
+|------| ------| 
+| 14,0 | 350,79| 
+
+**CNN Small**
+|RMSE | S-Score| 
+|------| ------| 
+| 18,87 | 566,55|
+
+**CNN Large**
+|RMSE | S-Score| 
+|------| ------| 
+| 18,23 | 548,84|
+
+**CNN Alternative MSE**
+|RMSE | S-Score| 
+|------| ------| 
+| 15,8 | 472.48| 
+
+**CNN Alternative QUAD**
+|RMSE | S-Score| 
+|------| ------| 
+| 15,9 | 434   | 

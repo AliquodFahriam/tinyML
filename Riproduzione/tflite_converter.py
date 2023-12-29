@@ -13,6 +13,7 @@ def convert_to_tflite(MODEL_DIR, BATCH_SIZE, STEPS, INPUT_SIZE, modello, nome_mo
 
 
     modello.save(MODEL_DIR, save_format="tf", signatures = concrete_func )
+    tf.keras.models.save_model(modello, nome_modello+".h5")
 
     converter = tf.lite.TFLiteConverter.from_saved_model(MODEL_DIR)
     tflite_model = converter.convert()
