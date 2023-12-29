@@ -1586,3 +1586,23 @@ CNN Alternativa QUAD-QUAD:
 |RMSE | S-Score| 
 |------| ------| 
 | 15,9 | 434   | 
+
+##### Risultati .tflite
+
+**LSTM Small TFLITE**
+|MSE | QUAD - QUAD | 
+|---------|--------| 
+|**RMSE:** 21,35         |    **RMSE:** 19,36|
+|**S-Score:** 1488.53    | **S-Score:** 876,9|
+
+
+**LSTM Large TFlite**
+|MSE | QUAD - QUAD | 
+|--------|---------|
+|**RMSE:** 19,8| **RMSE:** 29,9| 
+|**S-Score:** 1271,42  | **S-Score:** 31914,148|
+
+*Nota: Probabilmente per quanto riguarda la large QUAD-QUAD si tratta di un caso particolarmente sfortunato dovuto ai procedimenti stocastici in fase di addestramento*
+
+
+
