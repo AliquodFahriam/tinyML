@@ -16,9 +16,15 @@ L'obiettivo di questo lavoro è ricreare i modelli di proposti all'interno del p
 
 3. [Modelli](#modelli)
    
-    1.[LSTM Small](#lstm-small)
+    1. [LSTM Small](#lstm-small)
    
-    2.[LSTM Large](#lstm-large)
+    2. [LSTM Large](#lstm-large)
+
+    3. [CNN Small](#cnn-small)
+
+    4. [CNN Large](#cnn-large)
+
+    5. [CNN Alternativa](#cnn-alternative)
    
     3.[Metriche](#metriche)
    
@@ -30,12 +36,14 @@ L'obiettivo di questo lavoro è ricreare i modelli di proposti all'interno del p
 4. [Risultati Addestramento](#risultati-addestramento-fd001)
 
 5. [Conversione del modello in Tflite](#conversione-modello-in-tflite)
-6. [Considerazioni su chip ARM e presentazione dei target](#considerazioni-su-processori-arm-e-presentazione-dei-target)
-7. [Deploy dell'applicazione di validazione](#deploy-dellapplicazione-di-validazione-su-nucleo-f446re)
-8. [Comunicazione via UART con NUCLEO](#comunicazione-via-uart-con-nucleo)
-9. [Comunicazione via UART con Arduino](#comunicazione-uart-con-arduino)
-10. [Inferenza live su Arduino](#inferenza-live-su-arduino)
-11. [Inferenza live su Nucleo](#inferenza-live-su-nucleo)
+6. [Impronte in memoria post-conversione](#impronte-in-memoria-post-conversione)
+7. [Perdita di performance post-conversione](#perdite-di-performance-post-conversione) 
+8. [Considerazioni su chip ARM e presentazione dei target](#considerazioni-su-processori-arm-e-presentazione-dei-target)
+9. [Deploy dell'applicazione di validazione](#deploy-dellapplicazione-di-validazione-su-nucleo-f446re)
+10. [Comunicazione via UART con NUCLEO](#comunicazione-via-uart-con-nucleo)
+11. [Comunicazione via UART con Arduino](#comunicazione-uart-con-arduino)
+12. [Inferenza live su Arduino](#inferenza-live-su-arduino)
+13. [Inferenza live su Nucleo](#inferenza-live-su-nucleo)
 
 ## 1. Descrizione del dataset
 
@@ -208,7 +216,7 @@ aerospace gas turbine engines</a>
 
 Gli autori del paper che stiamo cercando di riprodurre propongono come migliori modelli due reti **LSTM** (Long Short Term memory) una di dimensioni ridotte mentre l'altra full size, esse sono rappresentate come segue:
 
-- **LSTM SMALL**
+**LSTM SMALL**
 
 | Lyer(Type)     | Output Shape   | Params |
 | -------------- | -------------- | ------ |
@@ -262,7 +270,8 @@ Descriveremo in seguito le metriche di valutazione e la funzione di Loss utilizz
 - Optimizer: Adam 
 - Initial learning rate: 0.01
 - Epochs: 100
-- Alpha value: 0.2 (Da provare con 0.4 come da testo)
+- Batch Size: 256
+- Alpha value: 0.4 
 
 Entrambe le reti sono addestrate con l'utilizzo di alcune funzioni di callback di tensorflow quali: 
 
@@ -270,10 +279,7 @@ Entrambe le reti sono addestrate con l'utilizzo di alcune funzioni di callback d
 
 - LearningRateScheduler: riduce il learning rate sulla base del numero di epoche. Per le reti ne abbiamo creati due differenti, il primo  ha il seguente codice: 
   
-  ```Python
-  
-  ```
-
+```Python
 def scheduler(epoch, lr):
     if epoch < 10:
         return lr
@@ -284,9 +290,11 @@ def scheduler(epoch, lr):
     elif epoch >= 30: 
         return 0.00001
     else: 
-        return 0.01; 
-
+        return 0.01;   
 ```
+
+
+
 Ovvero divide per 10 il learning rate ogni 10 eopoche fino a 30
 
 Il secondo invece lo divide per 10 ogni 30 epoche:
@@ -302,7 +310,76 @@ def scheduler2(epoch, lr):
         return 0.00001
     else: 
         return 0.01; 
-```
+~~~
+
+**CNN SMALL**
+
+| Lyer(Type)     | Output Shape   | Params |
+| -------------- | -------------- | ------ |
+| Conv1D         | (None, 23, 64)  | 7232  |
+| Conv1D         | (None, 18, 32)  | 12320 |
+| Conv1D         |  (None, 16, 16) |1552   |
+| MaxPooling1D   | (None,8,16)     | 0    |
+| Flatten          | (None, 128)     | 0    |
+| Dense | (None, 32)      | 4128     |
+| Dense | (None, 1)   | 33|
+
+
+**CNN LARGE**
+
+| Lyer(Type)     | Output Shape   | Params |
+| -------------- | -------------- | ------ |
+| Conv1D         | (None, 23, 64)  | 14464  |
+| Conv1D         | (None, 18, 64)  | 49216 |
+| Conv1D         | (None, 15, 32)  | 8224 |
+| Conv1D         |  (None, 14, 16) |1040   |
+| MaxPooling1D   | (None,7,16)     | 0    |
+| Flatten          | (None, 112)     | 0    |
+| Dense | (None, 32)      | 3616     |
+| Dense | (None, 1)   | 33|
+
+**CNN Alternativa**
+
+| Lyer(Type)     | Output Shape   | Params |
+| -------------- | -------------- | ------ |
+| Conv1D         | (None, 24, 256)  | 25344  |
+| Conv1D         | (None, 18, 96)  | 172128  |
+| Conv1D         |  (None, 12, 32) | 21536   |
+| GlobalAveragePooling1D  | (None,32)     | 0    |
+| Dense          | (None, 64)     | 2112    |
+| Dense | (None, 128)      | 8320     |
+| Dense | (None, 1)        |       129|
+
+**Iperparametri CNN small** 
+
+- Optimizer: Adam 
+- Initial learning rate: 0.01
+- Epochs: 80
+- Batch Size: 256
+- Alpha value: 0.2 
+
+**Iperparametri CNN Large**
+
+- Optimizer: Adam 
+- Initial learning rate: 0.01
+- Epochs: 150
+- Batch Size: 256
+- Alpha value: 0.2 
+
+**Iperparametri CNN Alternativa (MSE)**
+- Optimizer: Adam 
+- Initial learning rate: 0.001
+- Epochs: 30
+- Batch Size: 64
+
+**Iperparametri CNN Alternativa (QUAD-QUAD)**
+- Optimizer: Adam 
+- Initial learning rate: 0.001
+- Epochs: 30
+- Batch Size: 64
+- Alpha value: 0.2 
+
+
 
 ### Metriche
 
@@ -339,48 +416,87 @@ $$
 
 **MSE**:
 
-Abbiamo verificato sperimentalmente l'efficacia di questa funzione di loss in fase di addestramento. Quest'ultima, tuttavia, non rispetta ciò che abbiamo descritto in precedenza, ovvero non penalizza le *late predictions*. 
+Abbiamo, inoltre, verificato sperimentalmente l'efficacia del *Mean Square Error* come funzione di loss in fase di addestramento. Quest'ultima, tuttavia, non rispetta ciò che abbiamo descritto in precedenza, ovvero non penalizza le *late predictions*. 
 
 $$ MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $$
 
-## Risultati Addestramento FD001
+## Risultati Addestramento FD001 (Modelli Keras )
 
-**LSTM Small**: 
-- Risultati riproduzione (QUAD-QUAD): 
-  
-  - RMSE: 14,89
-  - S-Score: **332,76**
+### LSTM SMALL
 
+**LSTM Small QUAD**
+|RMSE | S-Score|
+|-----|--------|
+|14,83| 363,66 |
+
+**LSTM Small MSE**
+|RMSE | S-Score| 
+|------| ------| 
+| 15,0 | 440.03| 
 
 - Risultati stato dell'arte:    
   
   - RMSE: 14,94
   - S-Score: 495
 
-- Risultati riproduzione (MSE): 
+### LSTM LARGE 
 
-  - RMSE: 15,45
-  - S-Score: 462,53
+**LSTM Large QUAD**
+|RMSE | S-Score| 
+|------| ------| 
+| 14,6 | 367.13|
 
-
-**LSTM Large** 
-- Risultati riproduzione (QUAD-QUAD): 
-  
-  - RMSE: **13,98**
-  - S-Score: 342,06
-
+**LSTM large MSE**
+|RMSE | S-Score| 
+|------| ------| 
+| 14,0 | 350,79| 
 
 - Risultati stato dell'arte:    
   
   - RMSE: 14,5
   - S-Score: 347,78
 
-- Risultati riproduzione (MSE): 
-
-  - RMSE: 14,84
-  - S-Score: 446,89
-
 I risultati mostrano come le due reti con prestazioni migliori siano quelle sviluppate in questa sede. 
+
+### CNN SMALL
+
+**CNN Small**
+|RMSE | S-Score| 
+|------| ------| 
+| 18,87 | 566,55|
+
+
+**Risultati Stato dell'Arte** :
+  - CNN SMALL
+    - RMSE: 15,08 
+    - S-Score: 472, 75 
+
+### CNN LARGE
+**CNN Large**
+|RMSE | S-Score| 
+|------| ------| 
+| 18,23 | 548,84|
+
+**Risultati stato dell'Arte**
+  - CNN LARGE: 
+    - RMSE: 13,84
+    - S-Score: 422,41
+
+
+### CNN ALTERNATIVE
+
+**CNN Alternative MSE**
+|RMSE | S-Score| 
+|------| ------| 
+| 15,8 | 472.48| 
+
+**CNN Alternative QUAD**
+|RMSE | S-Score| 
+|------| ------| 
+| 15,9 | 434   | 
+
+Per quanto riguarda il campo delle CNN non siamo riusciti a riprodurre i risultati proposti. Tuttavia, cambiando la topologia della rete e i relativi iperparametri, siamo riusciti ad ottenerne di simili con le CNN alternative. Ancora una volta, anche in questo caso, l'addestramento tramite la funzione QUAD-QUAD risulta più efficace.
+
 
 ## Conversione modello in tflite
 
@@ -408,6 +524,81 @@ A questo punto abbiamo il nostro modello in formato *.tflite*, il quale si prese
 <img src='../DrawIO/small_lstm_fixed_batch_1.png'>
 <figcaption align='center'>Notare come la dimensione dell'input è passata da 256x30x14 a 1x30x14</figcaption>
 </figure>
+
+## Impronte in memoria Post-Conversione 
+
+|LSTM Small | LSTM Large | CNN small | CNN Large | CNN Alternative|
+|-----------|------------|-----------|-----------|----------------|
+| **RAM:** 14,59  **FLASH:** 240 KB | **RAM:** 28,68 KB **FLASH**:691 KB | **RAM**: 11,30KB **FLASH**:112,29 KB| **RAM**: 19,84 KB **FLASH**:313,40 | **RAM:** 34,47 KB **FLASH**: 910 KB| 
+
+
+È facilmente constatabile come la rete più pesante sia la CNN alternativa e, in particolare, di dimensione sostenibile soltanto da uno dei due target in esame. Al momento, quindi, la rete con la migliore *performance per byte* è la **LSTM Small**
+
+
+## Perdite di performance post-conversione
+
+**LSTM Small TFLITE**
+|MSE | QUAD - QUAD | 
+|---------|--------| 
+|**RMSE:** 21,35         |    **RMSE:** 19,36|
+|**S-Score:** 1488.53    | **S-Score:** 876,9|
+
+
+**LSTM Large TFlite**
+|MSE | QUAD - QUAD | 
+|--------|---------|
+|**RMSE:** 19,8| **RMSE:** 29,9| 
+|**S-Score:** 1271,42  | **S-Score:** 31914,148|
+
+*Nota: Probabilmente per quanto riguarda la large QUAD-QUAD si tratta di un caso particolarmente sfortunato dovuto ai procedimenti stocastici in fase di addestramento*
+
+**CNN Small e Large TFlite**
+| CNN Small | CNN Large |
+|-----------|-----------|
+|**RMSE**:18,87  | **RMSE**: 18,23  | 
+|**S-Score**:566.55| **S-Score**: 548,84|
+
+**CNN Alternative**
+
+|MSE | QUAD-QUAD| 
+|-----|---------|
+|**RMSE**:15,8  | **RMSE**: 15,93  | 
+|**S-Score**:472,48| **S-Score**: 434,02|
+
+
+Come è possibile constatare, le reti di tipo LSTM subiscono gravi perdite di performance a seguito della conversione in *tflite*. Al contrario le reti di tipo CNN, nonostante non riescano ad eguagliare le performance delle LSTM "*non convertite*", subiscono in maniera molto minore il calo di performance legato alla conversione. 
+Per quanto riguarda il deploy su microcontrollore, quindi saremmo tentati di scegliere proprio quest'ultima architettura, tuttavia il panorama delle opzioni si amplia se teniamo in considerazione le potenzialità di X-CUBE-AI. 
+
+Mi spiego meglio, il workflow per il deploy su microcontrollore di una applicazione TensorFlow Lite Micro è abbastanza standard: 
+1. Compilare e addestrare la rete tramite Keras e TensorFlow in Python 
+2. Convertire la rete in formato *.tflite* 
+3. Ricavare il file binario della rete tramite il comando: 
+~~~ bash 
+!xxd -i network.tflite > model_data.cc
+~~~
+4. Effettuare il deploy su microcontrollore come spiegato nei paragrafi precedenti. 
+
+Tuttavia, se parliamo di X-CUBE-AI non siamo limitati esclusivamente a questo tipo di modelli. Su microcontrollori che supportano questa tecnologia siamo in grado di utilizzare anche reti con formato *.h5*, ovvero il formato nativo di TensorFlow e Keras per desktop. Di conseguenza con una rete di dimensioni abbastanza ridotte potremmo essere in grado di sfruttarne la piena potenzialità. Ed è proprio questo che abbiamo fatto, effettuando il deploy della rete con performance migliori secondo l'S-Score, ovvero la LSTM small addestrata con funzione QUAD-QUAD di cui riportiamo le performance prima della conversione e dopo la conversione in tflite: 
+
+pre-conversione: 
+|RMSE | S-Score|
+|-----|--------|        
+|14,83| 363,66 |
+
+
+post-conversione: 
+|MSE | QUAD - QUAD | 
+|---------|--------| 
+|**RMSE:** 21,35         |    **RMSE:** 19,36|
+|**S-Score:** 1488.53    | **S-Score:** 876,9|
+
+Per una impronta in memoria che non varia di molto: 
+|Formato Keras | Formato TFLite|
+|--------------|---------------|
+|**RAM**:14,59 KB | **RAM**: 14,59 KB  | 
+| **FLASH:** 240,86 KB| **FLASH**:240 KB | 
+
+
 
 ## Considerazioni su processori ARM e presentazione dei target
 I due principali chip all'interno del panorama TinyML sono 
