@@ -1649,3 +1649,54 @@ Per una impronta in memoria che non varia di molto:
 |--------------|---------------|
 |**RAM**:14,59 KB | **RAM**: 14,59 KB  | 
 | **FLASH:** 240,86 KB| **FLASH**:240 KB | 
+
+
+## Aggiornamenti 2/01/2024
+
+Abbiamo ripetuto il nostro lavoro anhce per FD002
+
+I risultati post-addestramento sono i seguenti: 
+
+**LSTM Small QUAD**
+
+|RMSE | S-Score|
+|-----|--------|
+|33,78 | 46174,84 |
+
+**LSTM Small MSE**
+
+|RMSE | S-Score|
+|-----|--------|
+|30,98| 54275,42 |
+
+**LSTM Large QUAD** (Da provare con meno epoche)
+|RMSE | S-Score|
+|-----|--------|
+|31,67| 44252,42 |
+
+**LSTM Large MSE** (Da provare con meno epoche)
+|RMSE | S-Score|
+|-----|--------|
+|34,69| 102408.165 |
+
+**CNN Small**
+|RMSE | S-Score|
+|------|-------|
+| 36.26| 40750.05|
+
+**CNN Large**
+|RMSE | S-Score|
+|------|-------|
+| 33.95| 35798.38|
+
+**CNN Alternative MSE**
+|RMSE | S-Score| 
+|------|-------|
+|34,12 | 64150.73|
+
+**CNN Alternative QUAD**
+|RMSE | S-Score| 
+|------|-------| 
+|34.67| 59030.31| 
+
+Il peso delle reti rimane invariato a causa del fatto che non abbiamo modificato la loro morfologia. 
