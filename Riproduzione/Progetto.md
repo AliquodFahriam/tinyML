@@ -420,7 +420,7 @@ Abbiamo, inoltre, verificato sperimentalmente l'efficacia del *Mean Square Error
 
 $$ MSE = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 $$
 
-## Risultati Addestramento FD001 (Modelli Keras )
+## Risultati Addestramento FD001
 
 ### LSTM SMALL
 
@@ -496,6 +496,15 @@ I risultati mostrano come le due reti con prestazioni migliori siano quelle svil
 | 15,9 | 434   | 
 
 Per quanto riguarda il campo delle CNN non siamo riusciti a riprodurre i risultati proposti. Tuttavia, cambiando la topologia della rete e i relativi iperparametri, siamo riusciti ad ottenerne di simili con le CNN alternative. Ancora una volta, anche in questo caso, l'addestramento tramite la funzione QUAD-QUAD risulta più efficace.
+
+## Risultati addestramento FD002
+**LSTM Small**
+
+**LSTM Large** 
+
+**CNN Small** 
+
+**CNN Large** 
 
 
 ## Conversione modello in tflite
