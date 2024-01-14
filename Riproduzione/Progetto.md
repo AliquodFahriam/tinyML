@@ -499,12 +499,76 @@ Per quanto riguarda il campo delle CNN non siamo riusciti a riprodurre i risulta
 
 ## Risultati addestramento FD002
 **LSTM Small**
+|RMSE | S-Score| 
+|------| ------| 
+|28.4 | 17416.99   | 
 
 **LSTM Large** 
+|RMSE | S-Score| 
+|------| ------| 
+|31.59 | 45826.58   | 
+**CNN Small** 
+|RMSE | S-Score| 
+|------| ------| 
+|33.03 |22775.01   | 
+**CNN Large** 
+|RMSE | S-Score| 
+|------| ------| 
+|31.86 | 25606.40  | 
+
+## Risultati addestramento FD003
+
+**LSTM small**
+|RMSE | S-Score| 
+|------| ------| 
+|14.71 | 284.55  | 
+
+**LSTM large**
+|RMSE | S-Score| 
+|------| ------| 
+|13.78 | 289.78  | 
 
 **CNN Small** 
+|RMSE | S-Score| 
+|------| ------| 
+|17.53 | 547.38  | 
 
+**CNN Large**
+|RMSE | S-Score| 
+|------| ------| 
+|20.63 | 1036.23| 
+
+**CNN Alternativa (QUAD-QUAD)**
+|RMSE | S-Score| 
+|------| ------| 
+| 14.99 | 278.12|
+
+## Risultati addestramento FD004
+
+**LSTM Small**
+|RMSE | S-Score| 
+|------| ------| 
+|28.68 | 13479.67   | 
+
+**LSTM Large** 
+|RMSE | S-Score| 
+|------| ------| 
+|31.28 |54363.35   | 
+**CNN Small** 
+|RMSE | S-Score| 
+|------| ------| 
+|35.08|19328.83   | 
 **CNN Large** 
+|RMSE | S-Score| 
+|------| ------| 
+| 34.65 |  22526.32  | 
+
+
+*NB: per le versioni FD002 e FD004 delle LSTM sono state effettuate delle modifiche rispetto ai modelli di riferimento.**
+
+Nonostante i risultati ottenuti su queste due parti del dataset siano in linea con la stragrande maggioranza dello stato dell'arte non risultano comunque pienamente soddisfacenti. Nella configurazione originale le performance delle reti risultavano ancora più povere. Per l'ottimizzazione si è utilizzata una istanza di Keras Tuner prima con ricerca di tipo Random Search e poi con ottimizzazione bayesiana. 
+
+È possibile che le reti non siano abbastanza grandi da poter riuscire a rappresentare con precisione dati di questo tipo. C'è,inoltre, una chiara tendenza all'overfitting, motivo per cui è stato ridotto di molto il numero delle epoche di addestramento per queste due particolari parti del dataset. 
 
 
 ## Conversione modello in tflite
@@ -1337,3 +1401,24 @@ static void AI_Run(float *pIn, float *pOut)
 ```
 
 Al momento entrambi i microcontrollori sono in grado di effettuare una singola inferenza, tuttavia la causa non è determinata dal codice al loro interno ma dal codice all'interno della raspberry che dovrebbe prevedere l'invio di più di un frame di dati. Di base il codice sia per arduino che per NUCLEO funziona correttamente e i risultati coincidono sia tra i due che con quelli inferiti dalla rete in formato *.tflite* che può essere caricata anche su Desktop. 
+
+## Tempi di inferenza
+
+Abbiamo effettuato il deploy di LSTM small sui nostri microcontrollori. Rispettivamente su arduino soltanto il formato TFlite, mentre su NUCLEO abbiamo utilizzato anche la rete in formato Keras senza alcun tipo di conversione mantenendo inalterate le performance rispetto a quelle rilevate in fase di sviluppo. 
+| Arduino | NUCLEO-F446RE | Raspberry-Pi | Desktop |
+| --------| --------------| -------------|---------| 
+| 360 $ms$ |65.516 $\mu s$ |800.51 $\mu s $ | 285.69 $\mu s $  | 
+
+- Desktop: 333.83 $\mu s $ (Notebook Python)
+- Destkop: 285.69 $\mu s $(File Py)  
+- RaspberryPi: 800.51 $\mu s $ (File Py)
+- Nucleo (TFlite) 65.516 $\mu s$
+- Nucleo (Keras)  65.991 $\mu s$
+- Arduino  360 $ms$
+
+La differenza di prestazioni tra arduino e Nucleo è legata al fatto che la seconda ha un clock di 180 MHz mentre la prima di 64 MHz e alle differenze di ottimizzazione tra X-CUBE-AI (specifico per microcontrollori prodotti da STM) e TensorFlow Lite Micro. 
+
+La trasmissione dei dati avviene attraverso UART. Ovviamente il nostro è soltanto un esempio e sensori diversi possono richiedere diversi protocolli per la comunicazione. È tuttavia verosimile il fatto che, avendo una dimensione di input di 30x14 oppure 30x21, ci sia bisogno di leggere in sequenza i valori provenienti dai sensori e di memorizzarli all'interno della struttura dati di input. 
+Nel nostro caso trasmettiamo 420 valori prima di poter effettuare un'inferenza completa e, per quanto nel nostro esempio ciò sia fatto in sequenza, è assai più verosimile che un singolo frame di 14 elementi venga raccolto con tempo di campionamento costante. 
+
+

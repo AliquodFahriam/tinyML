@@ -1700,3 +1700,25 @@ I risultati post-addestramento sono i seguenti:
 |34.67| 59030.31| 
 
 Il peso delle reti rimane invariato a causa del fatto che non abbiamo modificato la loro morfologia. 
+
+
+## TODO LIST
+-Fare presente che l'articolo conclude con lo studio dell'implementabilità sul target
+- Cambiare tipo di grafico, istogrammi sovrapposti
+- Riportare differenze nei risultati e considerazioni per lo sviluppo del lavoro
+
+- Considerazioni sul dataset (OK nella tesi)
+- Indagare ancora sulle cause della perdita di performance (OK)
+
+
+
+## Indagare ancora sulle cause della perdita di performance: 
+https://www.tensorflow.org/lite/models/convert/rnn
+
+Known issues/limitations
+
+    Currently there is support only for converting stateless Keras LSTM (default behavior in Keras). Stateful Keras LSTM conversion is future work.
+    It is still possible to model a stateful Keras LSTM layer using the underlying stateless Keras LSTM layer and managing the state explicitly in the user program. Such a TensorFlow program can still be converted to TensorFlow Lite using the feature being described here.
+    Bidirectional LSTM is currently modelled as two UnidirectionalSequenceLSTM operations in TensorFlow Lite. This will be replaced with a single BidirectionalSequenceLSTM op.
+
+Al momento le opzioni disponibili non sono ottimali, l'approccio che abbiamo utilizzato potrebbe diventare standard a seguito di un aggiornamento della libreria tensorflow Lite così che possa supportare gli operatori per le LSTM con stato e Bidirezionali. 
